@@ -1,0 +1,359 @@
+#:import Factory kivy.factory.Factory
+
+<Image>
+    source: 'image.jpg'
+    allow_stretch: True
+    keep_ratio: False
+
+<TelaLogin>:
+    name: "login"
+
+    FloatLayout:
+        size: root.width, root.height
+
+        Image:
+
+        MDRectangleFlatButton:
+            size_hint: (.6, .7)
+            pos_hint: {'x': .2, 'y': .15}
+            font_size: 20
+            text_color:
+            line_color: (0/255,174/255,0/255,1)
+            md_bg_color: (1,1,1,1)
+
+
+        Label:
+            text: 'ANÁLISE TRIBUTÁRIA'
+            pos_hint: {'x':0.4, 'y':0.65}
+            color: (0,0,0,1)
+            size_hint: (.2, .1)
+            font_size: 30
+
+        Label:
+            text: 'Selecione a opção:'
+            pos_hint: {'x':0.4, 'y':0.55}
+            color: (43/255, 197/255, 232/255, 1)
+            size_hint: (.2, .1)
+            font_size: 25
+
+        MDRectangleFlatButton:
+            size_hint: (.15, .1)
+            text: 'Análises \nPendentes'
+            font_size: 22
+            pos_hint: {'x':0.25, 'y':0.45}
+            text_size: self.width, None
+            text_color: (1,1,1,1)
+            line_color: (1,1,1,1)
+            md_bg_color: (0/255,174/255,0/255,1)
+            on_release:
+                app.root.current = 'pendentes'
+
+
+        MDRectangleFlatButton:
+            size_hint: (.15, .1)
+            text: 'Nova Análise'
+            font_size: 22
+            pos_hint: {'x':0.425, 'y':0.45}
+            text_size: self.width, None
+            text_color: (1,1,1,1)
+            line_color: (1,1,1,1)
+            md_bg_color: (0/255,174/255,0/255,1)
+            on_press:
+                app.root.current = 'nova'
+
+<AnalisesPendentes>:
+    name: "pendentes"
+
+    on_enter:
+        self.add_datatable()
+
+    MDIconButton:
+        icon: 'arrow-left-bold-outline'
+        icon_size: '50dp'
+        pos_hint: {'x':0.01, 'y':0.9}
+        theme_text_color: "Custom"
+        text_color: (36/255,100/255,203/255,1)
+        on_press:
+            app.root.current = 'login'
+            root.manager.transition.direction = 'right'
+
+    MDBoxLayout:
+        orientation: 'vertical'
+        padding: 10
+
+
+        AnchorLayout:
+            id: data_layout
+
+
+<MDTextField>
+    mode: "rectangle"
+    size_hint: (.15, .1)
+    line_color_normal: [0,0,0,1]
+    text_color_normal: 0, 0, 0, 1
+    text_color_focus: 0, 0, 0, 1
+    write_tab: False
+
+<MDLabel>
+    font_size: 20
+    size_hint: .2, .1
+    halign: 'left'
+    color: (43/255, 197/255, 232/255, 1)
+
+<Check@MDCheckbox>:
+    group: 'group'
+    size_hint: None, None
+    size: dp(48), dp(48)
+
+
+<NovaAnalise>:
+    name: 'nova'
+
+    ScrollView:
+        BoxLayout:
+            orientation: 'vertical'
+            size_hint_y: None
+            height: 3200
+
+            GridLayout:
+                cols:1
+                size_hint: 1, .25
+
+                FloatLayout:
+
+                    size: root.width, root.height
+
+
+
+                    MDLabel:
+                        text: 'Análise Contábil e Tributária para Processos de Licitação e ou Contratação Direta'
+                        pos_hint: {'x':0.1, 'y':0.85}
+                        size_hint: .8, .2
+                        halign: 'center'
+
+
+                    MDIconButton:
+                        icon: 'arrow-left-bold-outline'
+                        icon_size: '50dp'
+                        pos_hint: {'x':0.01, 'y':0.9}
+                        theme_text_color: "Custom"
+                        text_color: (36/255,100/255,203/255,1)
+                        on_press:
+                            app.root.current = 'login'
+                            root.manager.transition.direction = 'right'
+
+                    MDRectangleFlatButton:
+                        size_hint: (.9, .4)
+                        pos_hint: {'x': .05, 'y': .5}
+                        font_size: 20
+                        text_color:
+                        line_color: (0/255,174/255,0/255,1)
+                        md_bg_color: (1,1,1,1)
+                        ripple_scale: 0
+
+
+                    MDTextField:
+                        id: gere
+                        hint_text: "Gerência Contratante"
+                        pos_hint: {'x':0.2, 'y':0.80}
+
+
+                    MDTextField:
+                        id: proc
+                        hint_text: 'Nº Processo GECBS'
+                        helper_text: 'Ex: DV-001-2022'
+                        pos_hint: {'x':0.425, 'y':0.8}
+
+
+                    MDTextField:
+                        id: req
+                        hint_text: 'Requisição de Compras'
+                        pos_hint: {'x':0.65, 'y':0.8}
+
+                    MDTextField:
+                        id: objcust
+                        hint_text: 'Objeto de Custos:'
+                        helper_text: 'Opções: Elemento PEP ou Centro Custo'
+                        pos_hint: {'x':0.2, 'y':0.7}
+
+
+                    MDLabel:
+                        text: 'Consta Orçamento:'
+                        pos_hint: {'x':0.42, 'y':0.68}
+                        size_hint: .2, .1
+                        halign: 'center'
+
+                    MDLabel:
+                        text: 'Sim'
+                        pos_hint: {'x':0.6, 'y':0.68}
+                        size_hint: .2, .1
+                        halign: 'center'
+
+                    MDLabel:
+                        text: 'Não'
+                        pos_hint: {'x':0.69, 'y':0.68}
+                        size_hint: .2, .1
+                        halign: 'center'
+
+                    Check:
+                        id: orcam_sim
+                        ripple_scale: 0
+                        pos_hint: {'x': 0.64, 'y': 0.7}
+
+                    Check:
+                        id: orcam_nao
+                        ripple_scale: 0
+                        pos_hint: {'x': 0.735, 'y': 0.7}
+
+
+                    MDLabel:
+                        text: 'Tipo de Análise:'
+                        size_hint: (.2, .1)
+                        text_size: self.size
+                        valign: 'center'
+                        halign: 'left'
+                        pos_hint: {'x':0.4, 'y':0.6}
+                        color: (43/255, 197/255, 232/255, 1)
+                        font_size: 20
+                        padding: 10, 10
+
+                    MDSwitch:
+                        group: 'group'
+                        id: check1
+                        ripple_scale: 0
+                        pos_hint: {'center_x': 0.2, 'center_y': 0.575}
+
+                    MDSwitch:
+                        #group: 'group'
+                        id: check2
+                        ripple_scale: 0
+                        pos_hint: {'center_x': 0.425, 'center_y': 0.575}
+
+                    MDSwitch:
+                        #group: 'group'
+                        id: check2
+                        ripple_scale: 0
+                        pos_hint: {'center_x': 0.625, 'center_y': 0.575}
+
+                    MDLabel:
+                        text: 'Serviço'
+                        pos_hint: {'x':0.225, 'y':0.525}
+
+                    MDLabel:
+                        text: 'Material'
+                        pos_hint: {'x':0.45, 'y':0.525}
+
+
+                    MDLabel:
+                        text: 'Serviço com Fornc. Material'
+                        pos_hint: {'x':0.65, 'y':0.525}
+
+
+                    MDRectangleFlatButton:
+                        size_hint: (.9, .4)
+                        pos_hint: {'x': .05, 'y': .05}
+                        font_size: 20
+                        text_color:
+                        line_color: (0/255,174/255,0/255,1)
+                        md_bg_color: (1,1,1,1)
+                        ripple_scale: 0
+
+                    MDLabel:
+                        text: 'Objeto da Contratação:'
+                        size_hint: (.2, .1)
+                        pos_hint: {'x':0.2, 'y':0.35}
+
+                    MDTextField:
+                        id: objeto
+                        multiline: True
+                        hint_text: "Descrição"
+                        pos_hint: {'x':0.2, 'y':0.225}
+                        size_hint: (.25, .15)
+                        write_tab: False
+
+                    MDLabel:
+                        text: 'Informações Complementares:'
+                        size_hint: (.3, .1)
+                        pos_hint: {'x':0.55, 'y':0.35}
+
+                    MDTextField:
+                        id: complem
+                        multiline: True
+                        hint_text: "Descrição"
+                        pos_hint: {'x':0.55, 'y':0.225}
+                        size_hint: (.25, .15)
+                        fill_color: 0, 0, 0, .4
+                        write_tab: False
+
+                    MDTextField:
+                        id: valor
+                        multiline: True
+                        hint_text: "Valor Estimado"
+                        pos_hint: {'x':0.425, 'y':0.105}
+                        size_hint: (.15, .08)
+                        fill_color: 0, 0, 0, .4
+                        write_tab: False
+
+
+            GridLayout:
+                cols:1
+                size_hint: 1, .25
+
+                FloatLayout:
+
+                    size: root.width, root.height
+
+                    BoxLayout:
+                        #padding: 10
+                        #cols: 1
+                       # rows: 20
+
+                        #size: root.width, root.height
+
+                        Button:
+                            text: 'teste'
+                            size_hint: .1, .1
+
+                        Button:
+                            text: 'teste'
+                        Button:
+                            text: 'teste'
+                        Button:
+                            text: 'teste'
+                        Button:
+                            text: 'teste'
+                            size_hint: .1, .1
+                        Button:
+                            text: 'teste'
+                        Button:
+                            text: 'teste'
+                        Button:
+                            text: 'teste'
+
+
+
+            GridLayout:
+                cols:1
+                size_hint: 1, .25
+
+                Button:
+                    text: 'teste3'
+
+            GridLayout:
+                cols:1
+                size_hint: 1, .25
+
+                Button:
+                    text: 'teste4'
+
+
+
+
+
+WindowManager:
+
+    TelaLogin:
+
+    AnalisesPendentes:
+
+    NovaAnalise:
