@@ -1,5 +1,6 @@
 from kivy.config import Config
 from kivy.uix.button import Button
+from kivy.uix.textinput import TextInput
 from kivymd.app import MDApp
 from kivymd.uix.datatables import MDDataTable
 from kivy.lang.builder import Builder
@@ -10,6 +11,7 @@ from datetime import datetime, date
 from kivy.utils import get_color_from_hex
 # from kivy.core.window import Window
 # Window.size = (1280, 720)
+from kivymd.uix.textfield import MDTextField
 
 Config.set('graphics', 'resizable', '1')
 Config.set('graphics', 'width', '1280')
@@ -83,6 +85,29 @@ class AnalisesPendentes(Screen):
 
 
 class NovaAnalise(Screen):
+
+    def teste(self):
+
+        px = 50
+        py = 160
+        for i in range(60):
+            for c in range(8):
+                if c == 1:
+                    largura = .2
+                elif c == 0:
+                    largura = .1
+                elif c == 3:
+                    largura = .1
+                else:
+                    largura = .05
+                mater = TextInput(size_hint=(largura, .05))
+
+                # self.entradas_mat.append(mater)
+                # self.lista_mat[c].append(mater)
+
+
+                self.ids.grid_teste.add_widget(mater)
+
 
     def gerar_analise(self):
         print(self.ids.gere.text)

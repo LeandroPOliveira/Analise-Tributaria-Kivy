@@ -109,6 +109,9 @@
 <NovaAnalise>:
     name: 'nova'
 
+    on_enter:
+        root.teste()
+
     ScrollView:
         BoxLayout:
             orientation: 'vertical'
@@ -299,37 +302,24 @@
                 cols:1
                 size_hint: 1, .25
 
-                FloatLayout:
 
-                    size: root.width, root.height
+                ScrollView:
+                    size_hint: .8, .1
+                    size: (self.width, 700)
 
-                    BoxLayout:
-                        #padding: 10
-                        #cols: 1
-                       # rows: 20
 
-                        #size: root.width, root.height
+                    GridLayout:
+                        id: grid_teste
+                        size_hint_y: None
+                        #height: self.minimum_height
+                        #width: self.minimum_width
+                        row_default_height: 30
+                        cols: 8
+                        rows: 60
+                        #rows: 240
+                        bar_width: 50
 
-                        Button:
-                            text: 'teste'
-                            size_hint: .1, .1
-
-                        Button:
-                            text: 'teste'
-                        Button:
-                            text: 'teste'
-                        Button:
-                            text: 'teste'
-                        Button:
-                            text: 'teste'
-                            size_hint: .1, .1
-                        Button:
-                            text: 'teste'
-                        Button:
-                            text: 'teste'
-                        Button:
-                            text: 'teste'
-
+                        padding: '200dp'
 
 
             GridLayout:
