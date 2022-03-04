@@ -95,7 +95,7 @@ class NovaAnalise(Screen):
 
 
     def teste(self):
-
+        self.pasta_principal = 'G:\\GECOT\Análise Contábil_Tributária_Licitações\\2022\\1Pendentes\\'
         self.lista_mat = [[], [], [], [], [], [], [], []]
         self.entradas_mat = []
         self.data_mat = ['CÓDIGO', 'DESCRIÇÃO', 'IVA', 'NCM', 'ICMS', 'IPI', 'PIS', 'COFINS']
@@ -132,35 +132,44 @@ class NovaAnalise(Screen):
 
                 self.ids.grid_teste.add_widget(self.mater)
 
-        self.entradas_mat[0].bind(on_text_validate=self.colar)
+
+        for i, n in enumerate(self.entradas_mat):
+            if i % 8 == 0:
+                self.entradas_mat[i].bind(on_text_validate=self.colar)
 
 
-    def campo(self):
-        print(self.entradas_mat[0].text)
+
 
     def colar(self, instance):
-        path = 'G:\GECOT\Análise Contábil_Tributária_Licitações\\2021\\1Pendentes\\'
-        cad_mat = pd.read_excel(path + 'material.xlsx', sheet_name='materiais')
+        for i, l in enumerate(self.entradas_mat):
+            if i % 8 == 0:
+                if l.text == '':
+                    self.posicao1 = int(i / 8) if i > 0 else i
+                    print(self.posicao1)
+                    break
+        cad_mat = pd.read_excel(self.pasta_principal + 'material.xlsx', sheet_name='materiais')
         cad_mat = pd.DataFrame(cad_mat)
         cad_mat['Material'] = cad_mat['Material'].astype(str)
         win32clipboard.OpenClipboard()
         rows = win32clipboard.GetClipboardData()
+        win32clipboard.EmptyClipboard()
         win32clipboard.CloseClipboard()
         rows = rows.split('\n')
-        rows.pop()
+
+        rows.pop() if len(rows) > 1 else rows
         for r, val in enumerate(rows):
             values = val.split('\t')
+            print(values)
             if len(values) > 1:
                 del values[1:]
             for b, value in enumerate(values):
                 for index, row in cad_mat.iterrows():
-                    self.lista_mat[b][r].text = value
+                    self.lista_mat[b][r + self.posicao1].text = value
                     if value.strip() == row['Material']:
                         campo = cad_mat.loc[index, 'Texto breve material']
                         campo = campo[:32]
-                        self.lista_mat[b + 1][r].text = campo
-                        self.lista_mat[b + 3][r].text = cad_mat.loc[index, 'Ncm']
-
+                        self.lista_mat[b + 1][r + self.posicao1].text = campo
+                        self.lista_mat[b + 3][r + self.posicao1].text = cad_mat.loc[index, 'Ncm']
 
 
 
@@ -203,6 +212,47 @@ class NovaAnalise(Screen):
                 self.lista[c].append(self.serv)
 
                 self.ids.grid_serv.add_widget(self.serv)
+
+        for i, n in enumerate(self.entradas):
+            if i % 3 == 0:
+                self.entradas[i].bind(on_text_validate=self.colar_serv)
+
+
+
+
+    def colar_serv(self, instance):
+
+        for i, l in enumerate(self.entradas):
+            if l.text == '':
+                self.posicao = int(i / 3) if i > 0 else i
+                print(self.posicao)
+                break
+        serv_cad = pd.read_excel(self.pasta_principal + 'material.xlsx', sheet_name='servicos')
+        serv_cad = pd.DataFrame(serv_cad)
+        serv_cad['Nº de serviço'] = serv_cad['Nº de serviço'].astype(str)
+        win32clipboard.OpenClipboard()
+        rows = win32clipboard.GetClipboardData()
+        win32clipboard.EmptyClipboard()
+        win32clipboard.CloseClipboard()
+        rows = rows.split('\n')
+
+
+        rows.pop() if len(rows) > 1 else rows
+
+        for r, val in enumerate(rows):
+            values = val.split('\t')
+            if len(values) > 1:
+                del values[1:]
+            for b, value in enumerate(values):
+                for index, row in serv_cad.iterrows():
+                    self.lista[b][r + self.posicao].text = value
+                    if value == row['Nº de serviço']:
+                        self.lista[b + 1][r + self.posicao].text = serv_cad.loc[index, 'Denominação']
+                        self.lista[b + 2][r + self.posicao].text = str(int(serv_cad.loc[index, 'Classe avaliaç.']))
+
+
+
+
 
 class WindowManager(ScreenManager):
     pass
