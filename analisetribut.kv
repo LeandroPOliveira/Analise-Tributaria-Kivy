@@ -98,7 +98,7 @@
     font_size: 20
     size_hint: .2, .1
     halign: 'left'
-    color: (43/255, 197/255, 232/255, 1)
+    color: (11/255, 156/255, 49/255, 1)
 
 <Check@MDCheckbox>:
     group: 'group'
@@ -110,8 +110,11 @@
     name: 'nova'
 
     on_enter:
-        root.teste()
+        root.tabela_materiais()
         root.campos_serv()
+        root.clausulas()
+
+
 
     ScrollView:
         bar_width: 10
@@ -122,7 +125,11 @@
             size_hint_y: None
             height: 4000
 
-
+            canvas.before:
+                Rectangle:
+                    pos: self.pos
+                    size: self.size
+                    source: "image3.jpg"
 
             GridLayout:
                 cols:1
@@ -152,8 +159,8 @@
                             root.manager.transition.direction = 'right'
 
                     MDRectangleFlatButton:
-                        size_hint: (.9, .4)
-                        pos_hint: {'x': .05, 'y': .5}
+                        size_hint: (.8, .4)
+                        pos_hint: {'x': .1, 'y': .5}
                         font_size: 20
                         text_color:
                         line_color: (0/255,174/255,0/255,1)
@@ -259,8 +266,8 @@
 
 
                     MDRectangleFlatButton:
-                        size_hint: (.9, .4)
-                        pos_hint: {'x': .05, 'y': .05}
+                        size_hint: (.8, .4)
+                        pos_hint: {'x': .1, 'y': .05}
                         font_size: 20
                         text_color:
                         line_color: (0/255,174/255,0/255,1)
@@ -312,7 +319,68 @@
                     size: root.width, root.height
 
                     MDLabel:
-                        text: ''
+                        text: 'Informações Tributárias - Materiais'
+                        size_hint: .3, .1
+                        pos_hint: {'x':0.4, 'y':0.6}
+
+
+
+                    Check:
+                        id: check_iva
+                        ripple_scale: 0
+                        pos_hint: {'x': 0.49, 'y': 0.12}
+                        group: False
+                        on_active:
+                            root.preenche_iva()
+
+                    Check:
+                        id: check_ncm
+                        ripple_scale: 0
+                        pos_hint: {'x': 0.57, 'y': 0.12}
+                        group: False
+                        on_active:
+                            root.preenche_ncm()
+
+                    Check:
+                        id: check_impostos
+                        ripple_scale: 0
+                        pos_hint: {'x': 0.73, 'y': 0.12}
+                        group: False
+                        on_active:
+                            root.preenche_aliq()
+
+
+                    MDLabel:
+                        text: 'Código'
+                        pos_hint: {'x':0.185, 'y':0.02}
+
+                    MDLabel:
+                        text: 'Descrição'
+                        pos_hint: {'x':0.325, 'y':0.02}
+
+                    MDLabel:
+                        text: 'IVA'
+                        pos_hint: {'x':0.485, 'y':0.02}
+
+                    MDLabel:
+                        text: 'NCM'
+                        pos_hint: {'x':0.565, 'y':0.02}
+
+                    MDLabel:
+                        text: 'ICMS'
+                        pos_hint: {'x':0.64, 'y':0.02}
+
+                    MDLabel:
+                        text: 'IPI'
+                        pos_hint: {'x':0.7, 'y':0.02}
+
+                    MDLabel:
+                        text: 'PIS'
+                        pos_hint: {'x':0.75, 'y':0.02}
+
+                    MDLabel:
+                        text: 'COFINS'
+                        pos_hint: {'x':0.79, 'y':0.02}
 
 
             GridLayout:
@@ -333,56 +401,92 @@
                         height: self.minimum_height
                         row_default_height: 30
                         cols: 8
-                        rows: 32
+                        rows: 30
                         bar_width: 50
                         padding: [200, 0, 200, 0]
+
+
 
             GridLayout:
                 cols:1
                 size_hint: 1, .05
 
+                FloatLayout:
 
+                    MDRectangleFlatButton:
+                        text: 'Limpar Campos'
+                        font_size: 18
+                        pos_hint: {'x': .45, 'y': .7}
+                        size_hint: .1, .15
+                        text_color: (1,1,1,1)
+                        line_color: (1,1,1,1)
+                        md_bg_color: (0/255,174/255,0/255,1)
+                        on_press:
+                            root.limpar()
+
+                    MDLabel:
+                        text: 'Informações Tributárias - Serviços'
+                        pos_hint: {'x': .35, 'y': .2}
+                        size_hint: .3, .1
+                        halign: 'center'
 
             GridLayout:
                 cols:1
-                size_hint: 1, .1
+                size_hint: 1, .12
 
                 FloatLayout:
 
                     size: root.width, root.height
 
-
                     MDRectangleFlatButton:
-                        size_hint: (.9, .8)
-                        pos_hint: {'x': .05, 'y': .1}
+                        size_hint: (.7, .8)
+                        pos_hint: {'x': .15, 'y': .15}
                         font_size: 20
                         text_color:
                         line_color: (0/255,174/255,0/255,1)
                         md_bg_color: (1,1,1,1)
                         ripple_scale: 0
 
-
                     MDTextField:
                         id: cod_serv
                         hint_text: "Código Serviço"
-                        pos_hint: {'x':0.15, 'y':0.55}
+                        pos_hint: {'x':0.2, 'y':0.75}
                         size_hint: (.1, .15)
 
                     MDTextField:
                         id: serv
                         hint_text: "Descrição"
-                        pos_hint: {'x':0.35, 'y':0.50}
-                        size_hint: (.3, .3)
+                        pos_hint: {'x':0.35, 'y':0.4}
+                        size_hint: (.45, .5)
+                        write_tab: False
+                        multiline: True
+                        cursor_home: True
+                        on_focus:
+                            root.busca_servico()
 
                     MDTextField:
                         id: iva
                         hint_text: "Código IVA"
-                        pos_hint: {'x':0.35, 'y':0.20}
+                        pos_hint: {'x':0.2, 'y':0.2}
                         size_hint: (.1, .15)
+
+                    MDLabel:
+                        text: 'Código'
+                        pos_hint: {'x':0.28, 'y':0}
+
+                    MDLabel:
+                        text: 'Descrição'
+                        pos_hint: {'x':0.47, 'y':0}
+
+                    MDLabel:
+                        text: 'C.C.'
+                        pos_hint: {'x':0.68, 'y':0}
+
+
 
             GridLayout:
                 cols:1
-                size_hint: 1, .1
+                size_hint: 1, .08
 
                 ScrollView:
                     size_hint: .8, .1
@@ -397,9 +501,9 @@
                         height: self.minimum_height
                         row_default_height: 30
                         cols: 3
-                        rows: 61
+                        rows: 60
                         bar_width: 50
-                        padding: [300, 20, 300, 20]
+                        padding: [300, 0, 300, 0]
 
 
 
@@ -408,16 +512,99 @@
                 cols:1
                 size_hint: 1, .2
 
-                Button:
-                    text: 'teste4'
+                BoxLayout:
+                    orientation: 'vertical'
+                    padding: [450, 50, 450, 50]
+                    spacing: 20
+                    size: root.width, root.height
+
+
+                    MDLabel:
+                        text: 'Observações'
+                        halign: 'center'
+                        size_hint: (1, .1)
+
+                    MDTextField:
+                        id: obs
+                        hint_text: "Obs. Materiais"
+                        size_hint: (1, .2)
+
+                    MDTextField:
+                        id: obs
+                        hint_text: "Obs. Serviços"
+                        size_hint: (1, .2)
+
+                    MDTextField:
+                        id: obs
+                        hint_text: "Obs. 1"
+                        size_hint: (1, .2)
+
+                    MDTextField:
+                        id: obs
+                        hint_text: "Obs. 2"
+                        size_hint: (1, .2)
 
             GridLayout:
                 cols:1
-                size_hint: 1, .2
+                size_hint: 1, .03
 
-                Button:
-                    text: 'teste5'
+                FloatLayout:
 
+                    MDLabel:
+                        text: 'Informações Contratuais:'
+                        pos_hint: {'x': .35, 'y': .4}
+                        size_hint: .3, .1
+                        halign: 'center'
+
+            GridLayout:
+                cols:1
+                size_hint: 1, .12
+
+                ScrollView:
+                    size_hint: .8, .1
+                    size: (self.width, 500)
+                    bar_margin: 150
+                    bar_width: 10
+                    scroll_type: ['bars', 'content']
+
+                    GridLayout:
+                        id: grid_clausulas
+                        size_hint_y: None
+                        height: self.minimum_height
+                        row_default_height: 100
+                        cols: 3
+                        rows: 17
+                        bar_width: 50
+                        padding: [250, 0, 250, 0]
+                        spacing: 20
+
+            GridLayout:
+                cols:1
+                size_hint: 1, .05
+
+                FloatLayout:
+
+                    size: root.width, root.height
+
+                    MDRectangleFlatButton:
+                        text: 'Gerar PDF'
+                        font_size: 18
+                        pos_hint: {'x': .6, 'y': .5}
+                        size_hint: .1, .15
+                        text_color: (1,1,1,1)
+                        line_color: (1,1,1,1)
+                        md_bg_color: (0/255,174/255,0/255,1)
+                        on_press:
+
+                    MDRectangleFlatButton:
+                        text: 'Enviar Email'
+                        font_size: 18
+                        pos_hint: {'x': .3, 'y': .5}
+                        size_hint: .1, .15
+                        text_color: (1,1,1,1)
+                        line_color: (1,1,1,1)
+                        md_bg_color: (0/255,174/255,0/255,1)
+                        on_press:
 
 
 WindowManager:
