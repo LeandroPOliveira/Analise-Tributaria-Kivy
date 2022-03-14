@@ -1,8 +1,6 @@
 import pickle
-from time import sleep
-
+from kivy.clock import Clock
 from kivy.config import Config
-from kivy.uix.button import Button
 from kivy.uix.textinput import TextInput
 from kivymd.app import MDApp
 from kivymd.uix.datatables import MDDataTable
@@ -14,16 +12,15 @@ from datetime import datetime, date
 from kivy.utils import get_color_from_hex
 import pandas as pd
 import win32clipboard
-from reportlab.pdfgen import canvas
-from PyPDF2 import PdfFileWriter, PdfFileReader
 from fpdf import FPDF
-from kivy.core.clipboard import Clipboard
-
-# from kivy.core.window import Window
-# Window.size = (1280, 720)
+from kivymd.uix.dialog import MDDialog
 from kivymd.uix.label import MDLabel
 from kivymd.uix.selectioncontrol import MDCheckbox
-from kivymd.uix.textfield import MDTextField, MDTextFieldRect, MDTextFieldRound
+from kivymd.uix.textfield import MDTextFieldRect
+import glob
+from reportlab.pdfgen import canvas
+from PyPDF2 import PdfFileWriter, PdfFileReader
+import win32com.client as win32
 
 Config.set('graphics', 'resizable', '1')
 Config.set('graphics', 'width', '1280')
@@ -32,38 +29,151 @@ Config.write()
 
 
 class TelaLogin(Screen):
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)
+    pass
 
 
 class AnalisesPendentes(Screen):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
-        self.data_tables = None
-        self.gere = 'gere'
+        self.arquivos_assinatura = []
+        self.arquivos_pdf = []
+        self.tabela_pendentes = None
+        with open('dados.txt', 'r') as bd:
+            dados = bd.readlines()
+            self.diretorio = dados[0]
+            print(self.diretorio)
 
-    def add_datatable(self):
+    def add_datatable(self):  # tabela com as análises pendentes
+        self.arquivos_diretorio = os.listdir(self.diretorio)
+        for item in self.arquivos_diretorio:
+            if item.endswith('.pdf') is True and item != 'watermark.pdf':
+                dt_modificacao = os.path.getctime(self.diretorio)
+                dt_modificacao = datetime.fromtimestamp(dt_modificacao)
+                data = date.strftime(dt_modificacao, '%d/%m/%Y')
+                self.arquivos_pdf.append((item, data))
+        if len(self.arquivos_pdf) == 1: self.arquivos_pdf.append(('', ''))
+
+        self.tabela_pendentes = MDDataTable(pos_hint={'center_x': 0.5, 'center_y': 0.5},
+                                            size_hint=(0.4, 0.55),
+                                            check=True, use_pagination=True,
+                                            background_color_header=get_color_from_hex("#0d7028"),
+                                            column_data=[("[color=#ffffff]Análise[/color]", dp(70)),
+                                            ("[color=#ffffff]Data[/color]", dp(60))],
+                                            row_data=self.arquivos_pdf, elevation=1)
+
+        self.add_widget(self.tabela_pendentes)
+
+        self.tabela_pendentes.bind(on_row_press=self.checked)
+        self.tabela_pendentes.bind(on_check_press=self.row_checked)
+
+    def checked(self, current_row):
+        self.arquivos_assinatura.append(current_row[0])
+
+    def row_checked(self, current_row):
+        if self.tabela_pendentes.get_row_checks():
+            pass
+        else:
+            try:
+                os.startfile(os.path.join(self.diretorio, current_row.text))
+            except FileNotFoundError:
+                self.dialog = MDDialog(text="Clique sobre o texto Análise Tributária...!", radius=[20, 7, 20, 7], )
+                self.dialog.open()
+
+    def assinatura(self):
+        # Criar a marca d'agua com a assinatura
+        c = canvas.Canvas('watermark.pdf')
+        # Desenhar a imagem na posição x e y.
+        c.drawImage('Paulo.png', 440, 30, 100, 60, mask='auto')
+        c.save()
+        # Buscar o arquivo da marca d'agua criado
+        watermark = PdfFileReader(open(os.path.join('watermark.pdf'), 'rb'))
+
+        self.salvos = []
+        for n, arquivo in enumerate(self.arquivos_pdf):
+            if self.list_check[n].text == 1:
+                os.chdir(self.diretorio)
+
+                self.output_file = PdfFileWriter()
+                with open(arquivo, "rb") as f:
+                    input_file = PdfFileReader(f, "rb")
+                    # Número de páginas do documento
+                    page_count = input_file.getNumPages()
+
+                    # Percorrer o arquivo para adicionar a marca d'agua
+                    for page_number in range(page_count):
+                        input_page = input_file.getPage(page_number)
+                        if page_number == page_count - 1:
+                            input_page.mergePage(watermark.getPage(0))
+                        self.output_file.addPage(input_page)
+
+                    # dir = os.getcwd()
+                    path = 'G:\GECOT\Análise Contábil_Tributária_Licitações\\2022'
+                    os.chdir(path)
+                    file = glob.glob(str(arquivo[21:32]) + '*')
+                    file = ''.join(file)
+                    try:
+                        os.chdir(file)
+                    except:
+                        os.chdir(path)
+
+                    # finally, write "output" to document-output.pdf
+                    with open('Análise Tributária - ' + str(arquivo[21:]), "wb") as outputStream:
+                        self.output_file.write(outputStream)
+
+                os.chdir(self.pasta_principal)
+                os.remove(arquivo)
+                self.salvos.append(n)
+
+        troca = 0
+        for i in self.salvos:
+            self.arquivos_pdf.pop(i - troca)
+            self.lista.pop(i - troca)
+            troca += 1
+
+        outlook = win32.Dispatch('outlook.application')
+
+        # criar um email
+        email = outlook.CreateItem(0)
+
+        # configurar as informações do seu e-mail
+        email.To = "mmsilva@gasbrasiliano.com.br"
+        email.Subject = "E-mail automático Análise Tributária"
+        email.HTMLBody = f"""
+                    <p>Análise(s) Tributária(s) assinada(s) com sucesso.</p>
+
+                    """
+
+        email.Send()
+
+        self.list_check.clear()
+
+
+class CarregarAnalise(Screen):
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+
+    def carregar_dados(self):
+
         self.lista = []
-        self.pasta1 = os.listdir('G:\GECOT\Análise Contábil_Tributária_Licitações\\2022\\1Pendentes\\')
-        self.pasta = []
-        for item in self.pasta1:
-            self.pasta.append(item)
-
-        for i, n in enumerate(self.pasta):
-            mod = os.path.getctime('G:\GECOT\Análise Contábil_Tributária_Licitações\\2022\\1Pendentes\\')
-            mod = datetime.fromtimestamp(mod)
-            data = date.strftime(mod, '%d/%m/%Y')
-            # self.lista.append([])
-            self.lista.append((n, data))
-            # self.lista[i].append(data)
+        self.temp_list = []
+        with open('Base.txt', "rb") as carga:
+            while True:
+                try:
+                    self.temp_list.append(pickle.load(carga))
+                except EOFError:
+                    break
+        for n, item in enumerate(self.temp_list):
+            itens = (item[2], item[0])
+            self.lista.append(itens)
+            self.lista.sort(key=lambda lista: datetime.strptime(lista[1], '%d/%m/%Y, %H:%M:%S'), reverse=True)
 
         self.data_tables = MDDataTable(pos_hint={'center_x': 0.5, 'center_y': 0.5},
-                                       size_hint=(0.4, 0.75),
+                                       size_hint=(0.5, 0.75), rows_num=10,
                                        check=True, use_pagination=True,
-                                       background_color_header=get_color_from_hex("#65275d"),
+                                       background_color_header=get_color_from_hex("#0d7028"),
 
-                                       column_data=[("[color=#ffffff]Análise[/color]", dp(40)),
-                                                    ("[color=#ffffff]Data[/color]", dp(40))],
+                                       column_data=[("[color=#ffffff]Análise[/color]", dp(60)),
+                                                    ("[color=#ffffff]Data[/color]", dp(60))],
                                        row_data=self.lista, elevation=1)
 
         self.add_widget(self.data_tables)
@@ -71,37 +181,73 @@ class AnalisesPendentes(Screen):
         self.data_tables.bind(on_check_press=self.checked)
         self.data_tables.bind(on_row_press=self.row_checked)
 
-        # self.theme_cls.theme_style = 'Light'
-        # self.theme_cls.primary_palette = 'BlueGray'
-        # Adicionar tabela na tela
-
-        self.lista2 = []
-
     def checked(self, instance_table, current_row):
-        self.lista2.append(current_row[0])
-        arquivo = current_row
-        # os.startfile('C:\\Users\leandro\Desktop\pendente\\' + arquivo[0])
-        # print(self.lista2)
+        pass
+        # self.lista2.append(current_row[0])
 
     def row_checked(self, instance_table, current_row):
-        if self.data_tables.get_row_checks():
-            pass
-        else:
-            print(type(self.data_tables.get_row_checks()))
-            os.startfile('G:\GECOT\Análise Contábil_Tributária_Licitações\\2022\\1Pendentes\\' + current_row.text)
+        verinfo3 = int(current_row.index / 2)
+        self.temp_list.sort(key=lambda lista: datetime.strptime(lista[0], '%d/%m/%Y, %H:%M:%S'), reverse=True)
+        self.manager.get_screen("nova").ids.gere.text = self.temp_list[int(verinfo3)][1]
+        self.manager.get_screen("nova").ids.proc.text = self.temp_list[int(verinfo3)][2]
+        self.manager.get_screen("nova").ids.req.text = self.temp_list[int(verinfo3)][3]
+        self.manager.get_screen("nova").ids.orcam_sim.state = 'down' if self.temp_list[int(verinfo3)][
+                                                                            4] == 'Sim' else 'normal'
+        self.manager.get_screen("nova").ids.orcam_nao.state = 'normal' if self.temp_list[int(verinfo3)][
+                                                                              4] == 'Sim' else 'down'
+        self.manager.get_screen("nova").ids.objcust.text = self.temp_list[int(verinfo3)][5]
+        self.manager.get_screen("nova").ids.check1.active = True if int(
+            self.temp_list[int(verinfo3)][6]) == 1 else False
+        self.manager.get_screen("nova").ids.check2.active = True if int(
+            self.temp_list[int(verinfo3)][7]) == 1 else False
+        self.manager.get_screen("nova").ids.check3.active = True if int(
+            self.temp_list[int(verinfo3)][8]) == 1 else False
+        self.manager.get_screen("nova").ids.objeto.text = self.temp_list[int(verinfo3)][9].strip()
+        self.manager.get_screen("nova").ids.valor.text = self.temp_list[int(verinfo3)][10]
+        self.manager.get_screen("nova").ids.complem.text = self.temp_list[int(verinfo3)][11].strip()
+        for r, val in enumerate(self.temp_list[int(verinfo3)][12]):
+            for b, value in enumerate(val):
+                self.manager.get_screen("nova").lista_mat[b][r].text = value
+
+        self.manager.get_screen("nova").ids.linha_mat.text = self.temp_list[int(verinfo3)][13]
+        self.manager.get_screen("nova").ids.serv.text = self.temp_list[int(verinfo3)][14].strip()
+        self.manager.get_screen("nova").ids.iva.text = self.temp_list[int(verinfo3)][15]
+        for r, val in enumerate(self.temp_list[int(verinfo3)][16]):
+            for b, value in enumerate(val):
+                self.manager.get_screen("nova").lista[b][r].text = value
+        self.manager.get_screen("nova").ids.linha_serv.text = self.temp_list[int(verinfo3)][17]
+        self.manager.get_screen("nova").ids.obs.text = self.temp_list[int(verinfo3)][18].strip().strip()
+        self.manager.get_screen("nova").ids.obs_serv.text = self.temp_list[int(verinfo3)][19].strip()
+        self.manager.get_screen("nova").ids.obs1.text = self.temp_list[int(verinfo3)][20].strip()
+        self.manager.get_screen("nova").ids.obs2.text = self.temp_list[int(verinfo3)][21].strip()
+        for n, i in enumerate(self.temp_list[int(verinfo3)][22]):
+            self.manager.get_screen("nova").infos[n].text = i.strip()
+        for n, i in enumerate(self.temp_list[int(verinfo3)][23]):
+            if i == 1:
+                self.manager.get_screen("nova").lista_check[n].state = 'down'
+
+        self.manager.current = 'nova'
+        cont = 0
+        for line in self.manager.get_screen("nova").ids.serv.text:
+            if "\n" in line:
+                cont += 1
+        print(cont)
 
 
 class NovaAnalise(Screen):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
+        Clock.schedule_once(self.tabela_materiais)
+        Clock.schedule_once(self.campos_serv)
+        Clock.schedule_once(self.clausulas)
 
-    def tabela_materiais(self):
+    def tabela_materiais(self, dt):
         self.pasta_principal = 'G:\\GECOT\Análise Contábil_Tributária_Licitações\\2022\\1Pendentes\\'
         self.lista_mat = [[], [], [], [], [], [], [], []]
         self.entradas_mat = []
         self.data_mat = ['CÓDIGO', 'DESCRIÇÃO', 'IVA', 'NCM', 'ICMS', 'IPI', 'PIS', 'COFINS']
 
-        for i in range(30):
+        for i in range(61):
             for c in range(8):
                 if c == 1:
                     largura = .2
@@ -118,7 +264,7 @@ class NovaAnalise(Screen):
                 # self.entradas_mat.append(mater)
                 # self.lista_mat[c].append(mater)
 
-                self.ids.grid_teste.add_widget(self.mater)
+                self.manager.get_screen("nova").ids.grid_teste.add_widget(self.mater)
 
         for i, n in enumerate(self.entradas_mat):
             if i % 8 == 0:
@@ -201,12 +347,12 @@ class NovaAnalise(Screen):
         for lin in self.entradas_mat:
             lin.text = ''
 
-    def campos_serv(self):
+    def campos_serv(self, dt):
         self.lista = [[], [], []]
         self.entradas = []
         self.data = [['DESCRIÇÃO', 'CÓDIGO', 'C.C']]
 
-        for i in range(60):
+        for i in range(90):
             for c in range(3):
                 if c == 1:
                     largura = 30
@@ -284,7 +430,7 @@ class NovaAnalise(Screen):
                 self.descricao.append(data_serv.loc[index, 'iss'] + '\n')
         self.ids.serv.text = ''.join([str(item) for item in self.descricao])
 
-    def clausulas(self):
+    def clausulas(self, dt):
         self.nomes = ['N/A', 'Minuta', 'Minuta 2', 'Redação', 'Redação 2', '2.3.7.', '2.3.7.1', '2.3.7.2', '2.3.7.3',
                       '2.3.7.4', '6.7.2', '15.1', '3.10.1', '3.9-10-11', 'Anexo 2']
 
@@ -292,7 +438,6 @@ class NovaAnalise(Screen):
         self.infos = []
 
         for i in range(15):
-
             self.checks = MDCheckbox(size_hint=(.05, .15))
             self.num_claus = MDLabel(text=self.nomes[i], size_hint=(.1, .15))
             self.clausulas = TextInput(size_hint=(.85, .3))
@@ -391,7 +536,8 @@ class NovaAnalise(Screen):
         self.pdf.set_xy(10.0, 25.0)
         self.pdf.cell(w=40, h=20, txt='Gerência Contratante:')
         self.pdf.set_xy(50.0, 25.0)
-        self.pdf.cell(w=40, h=20, txt=self.ids.gere.text)
+        # text2 = bytes(self.ids.gere.text, 'utf-8').decode('utf-8', 'ignore')
+        self.pdf.cell(w=40, h=20, txt=self.ids.gere.text.encode('latin-1', 'ignore').decode("latin-1"))
         self.pdf.set_xy(90.0, 22.5)
         self.pdf.cell(w=40, h=20, txt='N° do Processo GECBS:')
         self.pdf.set_xy(90.0, 26.5)
@@ -669,7 +815,6 @@ class NovaAnalise(Screen):
         if int(self.ids.linha_cont.text) > 0:
             self.pdf.rect(5.0, 5.0, 200.0, 280.0)
 
-
         # =============================== ASSINATURA E DATA =====================================#
         self.pdf.rect(5.0, 265.0, 200.0, 20.0)
         self.pdf.set_xy(10.0, 270.0)
@@ -684,6 +829,25 @@ class NovaAnalise(Screen):
         troca = self.ids.proc.text.replace('/', '-')
         self.pdf.output(self.pasta_principal + 'Análise Tributária - ' + troca + '.pdf', 'F')
         os.startfile(self.pasta_principal + 'Análise Tributária - ' + troca + '.pdf')
+
+    def enviar_email(self):
+        outlook = win32.Dispatch('outlook.application')
+
+        # criar um email
+        email = outlook.CreateItem(0)
+
+        # configurar as informações do seu e-mail
+        email.To = "loliveira@gasbrasiliano.com.br"
+        email.Subject = "E-mail automático Análise Tributária"
+        email.HTMLBody = f"""
+        <p>Análise Tributária {self.ids.proc.text} está disponível para assinatura.</p>
+
+        """
+
+        # anexo = "C://Users/joaop/Downloads/arquivo.xlsx"
+        # email.Attachments.Add(anexo)
+
+        email.Send()
 
 
 class WindowManager(ScreenManager):

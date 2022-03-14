@@ -40,6 +40,7 @@
             size_hint: (.15, .1)
             text: 'Análises \nPendentes'
             font_size: 22
+            bold: True
             pos_hint: {'x':0.25, 'y':0.45}
             text_size: self.width, None
             text_color: (1,1,1,1)
@@ -61,29 +62,51 @@
             on_press:
                 app.root.current = 'nova'
 
+        MDRectangleFlatButton:
+            size_hint: (.15, .1)
+            text: 'Carregar \nAnálise'
+            font_size: 22
+            pos_hint: {'x':0.6, 'y':0.45}
+            text_size: self.width, None
+            text_color: (1,1,1,1)
+            line_color: (1,1,1,1)
+            md_bg_color: (0/255,174/255,0/255,1)
+            on_press:
+                app.root.current = 'carregar'
+
+
 <AnalisesPendentes>:
     name: "pendentes"
 
     on_enter:
         self.add_datatable()
 
-    MDIconButton:
-        icon: 'arrow-left-bold-outline'
-        icon_size: '50dp'
-        pos_hint: {'x':0.01, 'y':0.9}
-        theme_text_color: "Custom"
-        text_color: (36/255,100/255,203/255,1)
-        on_press:
-            app.root.current = 'login'
-            root.manager.transition.direction = 'right'
+    FloatLayout:
+        size: root.width, root.height
 
-    MDBoxLayout:
-        orientation: 'vertical'
-        padding: 10
+        Image:
 
+        MDIconButton:
+            icon: 'arrow-left-bold-outline'
+            icon_size: '50dp'
+            pos_hint: {'x':0, 'y':0.9}
+            theme_text_color: "Custom"
+            text_color: (36/255,100/255,203/255,1)
+            on_press:
+                app.root.current = 'login'
+                root.manager.transition.direction = 'right'
 
-        AnchorLayout:
-            id: data_layout
+        MDRectangleFlatButton:
+            text: 'Assinar'
+            bold: True
+            font_size: 20
+            pos_hint: {'x': .45, 'y': .1}
+            size_hint: .1, .05
+            text_color: (1,1,1,1)
+            line_color: (1,1,1,1)
+            md_bg_color: (0/255,174/255,0/255,1)
+            on_press:
+                root.assinatura()
 
 
 <MDTextField>
@@ -106,14 +129,30 @@
     size: dp(48), dp(48)
 
 
-<NovaAnalise>:
-    name: 'nova'
+<CarregarAnalise>:
+    name: 'carregar'
+
 
     on_enter:
-        root.tabela_materiais()
-        root.campos_serv()
-        root.clausulas()
+        root.carregar_dados()
 
+    FloatLayout:
+        size: root.width, root.height
+
+        Image:
+
+        MDIconButton:
+            icon: 'arrow-left-bold-outline'
+            icon_size: '50dp'
+            pos_hint: {'x':0.01, 'y':0.9}
+            theme_text_color: "Custom"
+            text_color: (36/255,100/255,203/255,1)
+            on_press:
+                app.root.current = 'login'
+                root.manager.transition.direction = 'right'
+
+<NovaAnalise>:
+    name: 'nova'
 
 
     ScrollView:
@@ -403,7 +442,7 @@
                         height: self.minimum_height
                         row_default_height: 30
                         cols: 8
-                        rows: 30
+                        rows: 61
                         bar_width: 50
                         padding: [200, 0, 200, 0]
 
@@ -504,7 +543,7 @@
                         height: self.minimum_height
                         row_default_height: 30
                         cols: 3
-                        rows: 60
+                        rows: 90
                         bar_width: 50
                         padding: [300, 0, 300, 0]
 
@@ -528,21 +567,25 @@
                     MDTextField:
                         id: obs
                         hint_text: "Obs. Materiais"
+                        multiline: True
                         size_hint: (1, .2)
 
                     MDTextField:
                         id: obs_serv
                         hint_text: "Obs. Serviços"
+                        multiline: True
                         size_hint: (1, .2)
 
                     MDTextField:
                         id: obs1
                         hint_text: "Obs. 1"
+                        multiline: True
                         size_hint: (1, .2)
 
                     MDTextField:
                         id: obs2
                         hint_text: "Obs. 2"
+                        multiline: True
                         size_hint: (1, .2)
 
             GridLayout:
@@ -607,6 +650,7 @@
                         line_color: (1,1,1,1)
                         md_bg_color: (0/255,174/255,0/255,1)
                         on_press:
+                            root.enviar_email()
 
                     MDTextField:
                         text: '0'
@@ -650,3 +694,5 @@ WindowManager:
     AnalisesPendentes:
 
     NovaAnalise:
+
+    CarregarAnalise:
