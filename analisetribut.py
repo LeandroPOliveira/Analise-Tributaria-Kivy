@@ -1,6 +1,9 @@
+import getpass
+import math
 import pickle
 from kivy.clock import Clock
 from kivy.config import Config
+from kivy.properties import ObjectProperty
 from kivy.uix.textinput import TextInput
 from kivymd.app import MDApp
 from kivymd.uix.datatables import MDDataTable
@@ -39,11 +42,12 @@ class AnalisesPendentes(Screen):
         self.arquivos_pdf = []
         self.tabela_pendentes = None
         with open('dados.txt', 'r') as bd:
-            dados = bd.readlines()
-            self.diretorio = dados[0]
-            print(self.diretorio)
+            self.dados = bd.readlines()
+            self.diretorio = self.dados[0].rstrip('\n')
 
     def add_datatable(self):  # tabela com as análises pendentes
+        self.arquivos_assinatura.clear()
+        self.arquivos_pdf.clear()
         self.arquivos_diretorio = os.listdir(self.diretorio)
         for item in self.arquivos_diretorio:
             if item.endswith('.pdf') is True and item != 'watermark.pdf':
@@ -57,19 +61,20 @@ class AnalisesPendentes(Screen):
                                             size_hint=(0.4, 0.55),
                                             check=True, use_pagination=True,
                                             background_color_header=get_color_from_hex("#0d7028"),
-                                            column_data=[("[color=#ffffff]Análise[/color]", dp(70)),
-                                            ("[color=#ffffff]Data[/color]", dp(60))],
+                                            column_data=[("[color=#ffffff]Análise[/color]", dp(90)),
+                                            ("[color=#ffffff]Data[/color]", dp(30))],
                                             row_data=self.arquivos_pdf, elevation=1)
 
         self.add_widget(self.tabela_pendentes)
 
-        self.tabela_pendentes.bind(on_row_press=self.checked)
-        self.tabela_pendentes.bind(on_check_press=self.row_checked)
+        self.tabela_pendentes.bind(on_row_press=self.row_checked)
+        self.tabela_pendentes.bind(on_check_press=self.checked)
 
-    def checked(self, current_row):
+    def checked(self, instance_row, current_row):
         self.arquivos_assinatura.append(current_row[0])
+        print(current_row)
 
-    def row_checked(self, current_row):
+    def row_checked(self, instance_table, current_row):
         if self.tabela_pendentes.get_row_checks():
             pass
         else:
@@ -83,51 +88,52 @@ class AnalisesPendentes(Screen):
         # Criar a marca d'agua com a assinatura
         c = canvas.Canvas('watermark.pdf')
         # Desenhar a imagem na posição x e y.
-        c.drawImage('Paulo.png', 440, 30, 100, 60, mask='auto')
+        c.drawImage('gestor.png', 440, 30, 100, 60, mask='auto')
         c.save()
         # Buscar o arquivo da marca d'agua criado
         watermark = PdfFileReader(open(os.path.join('watermark.pdf'), 'rb'))
 
         self.salvos = []
-        for n, arquivo in enumerate(self.arquivos_pdf):
-            if self.list_check[n].text == 1:
-                os.chdir(self.diretorio)
+        for n, arquivo in enumerate(self.arquivos_assinatura):
 
-                self.output_file = PdfFileWriter()
-                with open(arquivo, "rb") as f:
-                    input_file = PdfFileReader(f, "rb")
-                    # Número de páginas do documento
-                    page_count = input_file.getNumPages()
+            os.chdir(self.diretorio)
 
-                    # Percorrer o arquivo para adicionar a marca d'agua
-                    for page_number in range(page_count):
-                        input_page = input_file.getPage(page_number)
-                        if page_number == page_count - 1:
-                            input_page.mergePage(watermark.getPage(0))
-                        self.output_file.addPage(input_page)
+            self.output_file = PdfFileWriter()
+            with open(arquivo, "rb") as f:
+                input_file = PdfFileReader(f, "rb")
+                # Número de páginas do documento
+                page_count = input_file.getNumPages()
 
-                    # dir = os.getcwd()
-                    path = 'G:\GECOT\Análise Contábil_Tributária_Licitações\\2022'
-                    os.chdir(path)
-                    file = glob.glob(str(arquivo[21:32]) + '*')
-                    file = ''.join(file)
-                    try:
-                        os.chdir(file)
-                    except:
-                        os.chdir(path)
+                # Percorrer o arquivo para adicionar a marca d'agua
+                for page_number in range(page_count):
+                    input_page = input_file.getPage(page_number)
+                    if page_number == page_count - 1:
+                        input_page.mergePage(watermark.getPage(0))
+                    self.output_file.addPage(input_page)
 
-                    # finally, write "output" to document-output.pdf
-                    with open('Análise Tributária - ' + str(arquivo[21:]), "wb") as outputStream:
-                        self.output_file.write(outputStream)
+                self.dir_acima = self.diretorio.split('\\')
+                self.dir_acima.insert(1, '\\')
+                self.dir_acima = os.path.join(*self.dir_acima[:-1])
+                os.chdir(self.dir_acima)
+                file = glob.glob(str(arquivo[21:32]) + '*')
+                pasta_analise = ''.join(file)
+                try:
+                    os.chdir(pasta_analise)
+                except:
+                    os.chdir(self.dir_acima)
 
-                os.chdir(self.pasta_principal)
-                os.remove(arquivo)
-                self.salvos.append(n)
+                # finally, write "output" to document-output.pdf
+                with open('Análise Tributária - ' + str(arquivo[21:]), "wb") as outputStream:
+                    self.output_file.write(outputStream)
+
+            os.chdir(self.diretorio)
+            os.remove(arquivo)
+            self.salvos.append(n)
 
         troca = 0
         for i in self.salvos:
             self.arquivos_pdf.pop(i - troca)
-            self.lista.pop(i - troca)
+            # self.lista.pop(i - troca)
             troca += 1
 
         outlook = win32.Dispatch('outlook.application')
@@ -136,7 +142,9 @@ class AnalisesPendentes(Screen):
         email = outlook.CreateItem(0)
 
         # configurar as informações do seu e-mail
-        email.To = "mmsilva@gasbrasiliano.com.br"
+        email.To = self.dados[1]
+        # email.To = self.dados[3] if self.manager.get_screen("pendentes").dados[3].split('@')[0] == \
+        #                             getpass.getuser() else self.manager.get_screen("pendentes").self.dados[5]
         email.Subject = "E-mail automático Análise Tributária"
         email.HTMLBody = f"""
                     <p>Análise(s) Tributária(s) assinada(s) com sucesso.</p>
@@ -145,7 +153,11 @@ class AnalisesPendentes(Screen):
 
         email.Send()
 
-        self.list_check.clear()
+        self.dialog = MDDialog(text='Análise(s) assinada(s) com sucesso!', radius=[20, 7, 20, 7], )
+        self.dialog.open()
+
+        self.add_datatable()
+
 
 
 class CarregarAnalise(Screen):
@@ -227,11 +239,7 @@ class CarregarAnalise(Screen):
                 self.manager.get_screen("nova").lista_check[n].state = 'down'
 
         self.manager.current = 'nova'
-        cont = 0
-        for line in self.manager.get_screen("nova").ids.serv.text:
-            if "\n" in line:
-                cont += 1
-        print(cont)
+
 
 
 class NovaAnalise(Screen):
@@ -242,7 +250,7 @@ class NovaAnalise(Screen):
         Clock.schedule_once(self.clausulas)
 
     def tabela_materiais(self, dt):
-        self.pasta_principal = 'G:\\GECOT\Análise Contábil_Tributária_Licitações\\2022\\1Pendentes\\'
+        # self.pasta_principal = 'G:\\GECOT\Análise Contábil_Tributária_Licitações\\2022\\1Pendentes\\'
         self.lista_mat = [[], [], [], [], [], [], [], []]
         self.entradas_mat = []
         self.data_mat = ['CÓDIGO', 'DESCRIÇÃO', 'IVA', 'NCM', 'ICMS', 'IPI', 'PIS', 'COFINS']
@@ -272,7 +280,7 @@ class NovaAnalise(Screen):
                 self.entradas_mat[i + 1].bind(focus=self.colar2)
 
     def colar2(self, instance, widget):
-        cad_mat = pd.read_excel(self.pasta_principal + 'material.xlsx', sheet_name='materiais')
+        cad_mat = pd.read_excel('material.xlsx', sheet_name='materiais')
         cad_mat = pd.DataFrame(cad_mat)
         cad_mat['Material'] = cad_mat['Material'].astype(str)
 
@@ -298,7 +306,7 @@ class NovaAnalise(Screen):
                     self.posicao1 = int(i / 8) if i > 0 else i
                     print(self.posicao1)
                     break
-        cad_mat = pd.read_excel(self.pasta_principal + 'material.xlsx', sheet_name='materiais')
+        cad_mat = pd.read_excel('material.xlsx', sheet_name='materiais')
         cad_mat = pd.DataFrame(cad_mat)
         cad_mat['Material'] = cad_mat['Material'].astype(str)
         win32clipboard.OpenClipboard()
@@ -370,7 +378,7 @@ class NovaAnalise(Screen):
                 self.entradas[i + 1].bind(focus=self.colar_serv2)
 
     def colar_serv2(self, instance, widget):
-        serv_cad = pd.read_excel(self.pasta_principal + 'material.xlsx', sheet_name='servicos')
+        serv_cad = pd.read_excel('material.xlsx', sheet_name='servicos')
         serv_cad = pd.DataFrame(serv_cad)
         serv_cad['Nº de serviço'] = serv_cad['Nº de serviço'].astype(str)
 
@@ -391,7 +399,7 @@ class NovaAnalise(Screen):
                 self.posicao = int(i / 3) if i > 0 else i
                 print(self.posicao)
                 break
-        serv_cad = pd.read_excel(self.pasta_principal + 'material.xlsx', sheet_name='servicos')
+        serv_cad = pd.read_excel('material.xlsx', sheet_name='servicos')
         serv_cad = pd.DataFrame(serv_cad)
         serv_cad['Nº de serviço'] = serv_cad['Nº de serviço'].astype(str)
         win32clipboard.OpenClipboard()
@@ -415,7 +423,7 @@ class NovaAnalise(Screen):
 
     def busca_servico(self):
         # self.path = 'G:\GECOT\Análise Contábil_Tributária_Licitações\\2022\\1Pendentes\\'
-        data_serv = pd.read_excel(self.pasta_principal + 'material.xlsx', sheet_name='116', dtype=str)
+        data_serv = pd.read_excel('material.xlsx', sheet_name='116', dtype=str)
         data_serv = pd.DataFrame(data_serv)
         self.descricao = []
         for index, row in data_serv.iterrows():
@@ -448,7 +456,7 @@ class NovaAnalise(Screen):
             self.infos.append(self.clausulas)
             self.lista_check.append(self.checks)
 
-        with open(self.pasta_principal + 'texto.txt', 'r', encoding='latin-1') as read_obj:
+        with open('texto.txt', 'r', encoding='latin-1') as read_obj:
             csv_reader = read_obj.readlines()
 
             for index, row in enumerate(csv_reader):
@@ -518,7 +526,7 @@ class NovaAnalise(Screen):
         self.pdf.rect(5.0, 5.0, 200.0, 280.0)
         self.pdf.rect(5.0, 5.0, 200.0, 20.0)
 
-        self.pdf.image(self.pasta_principal + 'logo.jpg', x=7.0, y=7.0,
+        self.pdf.image('logo.jpg', x=7.0, y=7.0,
                        h=15.0, w=50.0)
         self.pdf.line(70.0, 5.0, 70.0, 25.0)
 
@@ -601,6 +609,14 @@ class NovaAnalise(Screen):
         # self.pdf.set_auto_page_break(True, 20.0)
 
         # ======================================= MATERIAIS =================================#
+
+        # Verificar a quantidade de linhas necessárias para o quadro completo de materiais
+        cont = 0
+        for line in self.manager.get_screen("nova").ids.serv.text:
+            if "\n" in line:
+                cont += 1
+        print(cont)
+
         if self.entradas_mat[0].text != '':
             self.pdf.set_y(self.pdf.get_y() + (float(self.ids.linha_mat.text) * 5))
             if int(self.ids.linha_mat.text) > 0:
@@ -802,12 +818,18 @@ class NovaAnalise(Screen):
 
         self.pdf.set_y(self.pdf.get_y() + (float(self.ids.linha_cont.text) * 10))
         self.pdf.set_xy(10.0, self.pdf.get_y() + 5)
-        self.pdf.cell(w=40, h=5, txt='Informações Contratuais : ')
-        self.pdf.set_xy(10.0, self.pdf.get_y() + 5)
+        # self.pdf.cell(w=40, h=5, txt='Informações Contratuais : ')
+        # self.pdf.set_xy(10.0, self.pdf.get_y() + 5)
         for i, item in enumerate(self.lista_check):
             if item.active is True:
-                self.pdf.set_xy(15.0, self.pdf.get_y() + 5)
-                self.pdf.multi_cell(w=180, h=5, align='L', txt=self.infos[i].text)
+                if self.pdf.get_y() + math.ceil(len(self.infos[i].text) / 105) * 5 > 270:
+                    self.pdf.add_page()
+                    self.pdf.rect(5.0, 5.0, 200.0, 285.0)
+                    self.pdf.cell(w=40, h=5, txt='Informações Contratuais : ')
+                    self.pdf.set_xy(10.0, self.pdf.get_y() + 5)
+                else:
+                    self.pdf.set_xy(15.0, self.pdf.get_y() + 5)
+                    self.pdf.multi_cell(w=180, h=5, align='L', txt=self.infos[i].text)
                 if self.pdf.get_y() > 270:
                     self.pdf.add_page()
                     self.pdf.rect(5.0, 5.0, 200.0, 285.0)
@@ -825,10 +847,12 @@ class NovaAnalise(Screen):
         self.pdf.line(130.0, 265.0, 130.0, 285.0)
         self.pdf.set_xy(135.0, 270.0)
         self.pdf.cell(w=40, txt='Revisado pela Gerência: ')
-        self.pdf.image(self.pasta_principal + 'Mari1.png', x=7.0, y=265.0, h=25.0, w=45.0)
+        self.pdf.image('usuario1.png' if self.manager.get_screen('pendentes').dados[3].split('@')[0] ==
+                                         getpass.getuser() else 'usuario2.png', y=265.0, h=25.0, w=45.0)
         troca = self.ids.proc.text.replace('/', '-')
-        self.pdf.output(self.pasta_principal + 'Análise Tributária - ' + troca + '.pdf', 'F')
-        os.startfile(self.pasta_principal + 'Análise Tributária - ' + troca + '.pdf')
+        nome_arquivo = 'Análise Tributária - ' + troca + '.pdf'
+        self.pdf.output(os.path.join(self.manager.get_screen("pendentes").diretorio, nome_arquivo), 'F')
+        os.startfile(os.path.join(self.manager.get_screen("pendentes").diretorio, nome_arquivo))
 
     def enviar_email(self):
         outlook = win32.Dispatch('outlook.application')
@@ -837,7 +861,8 @@ class NovaAnalise(Screen):
         email = outlook.CreateItem(0)
 
         # configurar as informações do seu e-mail
-        email.To = "loliveira@gasbrasiliano.com.br"
+        email.To = self.dados[3] if self.manager.get_screen("pendentes").dados[3].split('@')[0] == \
+                                    getpass.getuser() else self.manager.get_screen("pendentes").self.dados[5]
         email.Subject = "E-mail automático Análise Tributária"
         email.HTMLBody = f"""
         <p>Análise Tributária {self.ids.proc.text} está disponível para assinatura.</p>
