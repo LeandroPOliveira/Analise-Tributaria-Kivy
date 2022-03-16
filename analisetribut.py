@@ -142,7 +142,7 @@ class AnalisesPendentes(Screen):
         email = outlook.CreateItem(0)
 
         # configurar as informações do seu e-mail
-        email.To = self.dados[1]
+        email.To = self.manager.get_screen("nova").ids.linha_obs.text = self.temp_list[int(verinfo3)][26]
         # email.To = self.dados[3] if self.manager.get_screen("pendentes").dados[3].split('@')[0] == \
         #                             getpass.getuser() else self.manager.get_screen("pendentes").self.dados[5]
         email.Subject = "E-mail automático Análise Tributária"
@@ -168,7 +168,7 @@ class CarregarAnalise(Screen):
 
         self.lista = []
         self.temp_list = []
-        with open('Base.txt', "rb") as carga:
+        with open(os.path.join(self.manager.get_screen('pendentes').diretorio, 'Base.txt'), "rb") as carga:
             while True:
                 try:
                     self.temp_list.append(pickle.load(carga))
@@ -178,6 +178,7 @@ class CarregarAnalise(Screen):
             itens = (item[2], item[0])
             self.lista.append(itens)
             self.lista.sort(key=lambda lista: datetime.strptime(lista[1], '%d/%m/%Y, %H:%M:%S'), reverse=True)
+        if len(self.lista) == 1: self.lista.append(('', ''))
 
         self.data_tables = MDDataTable(pos_hint={'center_x': 0.5, 'center_y': 0.5},
                                        size_hint=(0.5, 0.75), rows_num=10,
@@ -204,16 +205,13 @@ class CarregarAnalise(Screen):
         self.manager.get_screen("nova").ids.proc.text = self.temp_list[int(verinfo3)][2]
         self.manager.get_screen("nova").ids.req.text = self.temp_list[int(verinfo3)][3]
         self.manager.get_screen("nova").ids.orcam_sim.state = 'down' if self.temp_list[int(verinfo3)][
-                                                                            4] == 'Sim' else 'normal'
+                                                                            4] == 'down' else 'normal'
         self.manager.get_screen("nova").ids.orcam_nao.state = 'normal' if self.temp_list[int(verinfo3)][
-                                                                              4] == 'Sim' else 'down'
+                                                                              4] == 'down' else 'down'
         self.manager.get_screen("nova").ids.objcust.text = self.temp_list[int(verinfo3)][5]
-        self.manager.get_screen("nova").ids.check1.active = True if int(
-            self.temp_list[int(verinfo3)][6]) == 1 else False
-        self.manager.get_screen("nova").ids.check2.active = True if int(
-            self.temp_list[int(verinfo3)][7]) == 1 else False
-        self.manager.get_screen("nova").ids.check3.active = True if int(
-            self.temp_list[int(verinfo3)][8]) == 1 else False
+        self.manager.get_screen("nova").ids.check1.active = self.temp_list[int(verinfo3)][6]
+        self.manager.get_screen("nova").ids.check2.active = self.temp_list[int(verinfo3)][7]
+        self.manager.get_screen("nova").ids.check3.active = self.temp_list[int(verinfo3)][8]
         self.manager.get_screen("nova").ids.objeto.text = self.temp_list[int(verinfo3)][9].strip()
         self.manager.get_screen("nova").ids.valor.text = self.temp_list[int(verinfo3)][10]
         self.manager.get_screen("nova").ids.complem.text = self.temp_list[int(verinfo3)][11].strip()
@@ -235,9 +233,10 @@ class CarregarAnalise(Screen):
         for n, i in enumerate(self.temp_list[int(verinfo3)][22]):
             self.manager.get_screen("nova").infos[n].text = i.strip()
         for n, i in enumerate(self.temp_list[int(verinfo3)][23]):
-            if i == 1:
+            if i == 'down':
                 self.manager.get_screen("nova").lista_check[n].state = 'down'
-
+        self.manager.get_screen("nova").ids.linha_cont.text = self.temp_list[int(verinfo3)][24]
+        self.manager.get_screen("nova").ids.linha_obs.text = self.temp_list[int(verinfo3)][25]
         self.manager.current = 'nova'
 
 
@@ -248,6 +247,22 @@ class NovaAnalise(Screen):
         Clock.schedule_once(self.tabela_materiais)
         Clock.schedule_once(self.campos_serv)
         Clock.schedule_once(self.clausulas)
+        Clock.schedule_once(self.informacoes_padrao)
+
+    def informacoes_padrao(self, dt):
+        self.ids.obs.text = 'Produto para Consumo Final. \nFabricante: Alíquota de ICMS de 18% conforme RICMS-SP/2000, ' \
+                            'Livro I, Título III, Capítulo II, Seção II, Artigo 52, Inciso I \nRevendedor: Informar o ' \
+                            'ICMS-ST  recolhido anteriormente\n\nEntrega de materiais em local diverso do destinatário: ' \
+                            'o endereço deverá constar na nota fiscal em campo específico do xml (bloco G) e em dados ' \
+                            'adicionais. (Regime Especial 28558/2018).'
+
+        self.ids.obs1.text = 'Obs 1: Caso o fornecedor possua alguma especificidade que implique tratamento tributário' \
+                             ' diverso do exposto acima, ou seja do regime tributário "SIMPLES NACIONAL" deverá' \
+                             '  apresentar documentação hábil que comprove sua condição peculiar, a qual será alvo de' \
+                             ' análise prévia pela GECOT.'
+
+        self.ids.obs2.text = 'Obs 2: Essa Análise não é exaustiva, podendo sofrer alterações no decorrer do processo de '\
+                                'contratação em relação ao produto/serviço.'
 
     def tabela_materiais(self, dt):
         # self.pasta_principal = 'G:\\GECOT\Análise Contábil_Tributária_Licitações\\2022\\1Pendentes\\'
@@ -280,9 +295,9 @@ class NovaAnalise(Screen):
                 self.entradas_mat[i + 1].bind(focus=self.colar2)
 
     def colar2(self, instance, widget):
-        cad_mat = pd.read_excel('material.xlsx', sheet_name='materiais')
+        cad_mat = pd.read_excel('material.xlsx', sheet_name='materiais', converters={'Material': str, 'IPI': str})
         cad_mat = pd.DataFrame(cad_mat)
-        cad_mat['Material'] = cad_mat['Material'].astype(str)
+        # cad_mat['Material'] = cad_mat['Material'].astype(str)
 
         for i, l in enumerate(self.entradas_mat):
             if i % 8 == 0:
@@ -296,6 +311,7 @@ class NovaAnalise(Screen):
                             campo = campo[:32]
                             self.entradas_mat[i + 1].text = campo
                             self.entradas_mat[i + 3].text = cad_mat.loc[index, 'Ncm']
+                            self.entradas_mat[i + 5].text = cad_mat.loc[index, 'IPI']
                             break
 
     def colar(self, instance):
@@ -306,7 +322,7 @@ class NovaAnalise(Screen):
                     self.posicao1 = int(i / 8) if i > 0 else i
                     print(self.posicao1)
                     break
-        cad_mat = pd.read_excel('material.xlsx', sheet_name='materiais')
+        cad_mat = pd.read_excel('material.xlsx', sheet_name='materiais', converters={'Material': str, 'IPI': str})
         cad_mat = pd.DataFrame(cad_mat)
         cad_mat['Material'] = cad_mat['Material'].astype(str)
         win32clipboard.OpenClipboard()
@@ -328,6 +344,7 @@ class NovaAnalise(Screen):
                         campo = campo[:32]
                         self.lista_mat[b + 1][r + self.posicao1].text = campo
                         self.lista_mat[b + 3][r + self.posicao1].text = cad_mat.loc[index, 'Ncm']
+                        self.lista_mat[b + 5][r + self.posicao1].text = cad_mat.loc[index, 'IPI']
 
     def preenche_iva(self):
         for e, item in enumerate(self.entradas_mat):
@@ -347,12 +364,15 @@ class NovaAnalise(Screen):
             if e % 8 == 0:
                 if item.text != '':
                     self.entradas_mat[e + 4].text = '18%'
-                    self.entradas_mat[e + 5].text = '15%'
                     self.entradas_mat[e + 6].text = '1,65%'
                     self.entradas_mat[e + 7].text = '7,6%'
 
     def limpar(self):
         for lin in self.entradas_mat:
+            lin.text = ''
+
+    def limpar_serv(self):
+        for lin in self.entradas:
             lin.text = ''
 
     def campos_serv(self, dt):
@@ -422,100 +442,97 @@ class NovaAnalise(Screen):
                         self.lista[b + 2][r + self.posicao].text = str(int(serv_cad.loc[index, 'Classe avaliaç.']))
 
     def busca_servico(self):
-        # self.path = 'G:\GECOT\Análise Contábil_Tributária_Licitações\\2022\\1Pendentes\\'
-        data_serv = pd.read_excel('material.xlsx', sheet_name='116', dtype=str)
-        data_serv = pd.DataFrame(data_serv)
-        self.descricao = []
-        for index, row in data_serv.iterrows():
-            if self.ids.cod_serv.text == row['servico']:
-                self.descricao.append(row['servico'] + ' - ' + data_serv.loc[index, 'descricao'] + '\n')
-                self.descricao.append('\n')
-                self.descricao.append(data_serv.loc[index, 'obs'] + '\n')
-                self.descricao.append('\n')
-                self.descricao.append(data_serv.loc[index, 'irrf'] + '\n')
-                self.descricao.append(data_serv.loc[index, 'crf'] + '\n')
-                self.descricao.append(data_serv.loc[index, 'inss'] + '\n')
-                self.descricao.append(data_serv.loc[index, 'iss'] + '\n')
-        self.ids.serv.text = ''.join([str(item) for item in self.descricao])
+        if self.ids.cod_serv.text != '':
+            # self.path = 'G:\GECOT\Análise Contábil_Tributária_Licitações\\2022\\1Pendentes\\'
+            data_serv = pd.read_excel('material.xlsx', sheet_name='116', dtype=str)
+            data_serv = pd.DataFrame(data_serv)
+            self.descricao = []
+            for index, row in data_serv.iterrows():
+                if self.ids.cod_serv.text == row['servico']:
+                    self.descricao.append(row['servico'] + ' - ' + data_serv.loc[index, 'descricao'] + '\n')
+                    self.descricao.append('\n')
+                    self.descricao.append(data_serv.loc[index, 'obs'] + '\n')
+                    self.descricao.append('\n')
+                    self.descricao.append(data_serv.loc[index, 'irrf'] + '\n')
+                    self.descricao.append(data_serv.loc[index, 'crf'] + '\n')
+                    self.descricao.append(data_serv.loc[index, 'inss'] + '\n')
+                    self.descricao.append(data_serv.loc[index, 'iss'] + '\n')
+            self.ids.serv.text = ''.join([str(item) for item in self.descricao])
 
     def clausulas(self, dt):
-        self.nomes = ['N/A', 'Minuta', 'Minuta 2', 'Redação', 'Redação 2', '2.3.7.', '2.3.7.1', '2.3.7.2', '2.3.7.3',
-                      '2.3.7.4', '6.7.2', '15.1', '3.10.1', '3.9-10-11', 'Anexo 2']
-
-        self.lista_check = []
-        self.infos = []
-
-        for i in range(15):
-            self.checks = MDCheckbox(size_hint=(.05, .15))
-            self.num_claus = MDLabel(text=self.nomes[i], size_hint=(.1, .15))
-            self.clausulas = TextInput(size_hint=(.85, .3))
-
-            self.ids.grid_clausulas.add_widget(self.checks)
-            self.ids.grid_clausulas.add_widget(self.num_claus)
-            self.ids.grid_clausulas.add_widget(self.clausulas)
-            self.infos.append(self.clausulas)
-            self.lista_check.append(self.checks)
-
         with open('texto.txt', 'r', encoding='latin-1') as read_obj:
-            csv_reader = read_obj.readlines()
+            texto_clausulas = read_obj.readlines()
 
-            for index, row in enumerate(csv_reader):
+            self.lista_check = []
+            self.infos = []
+
+            for i in range(15):
+                self.checks = MDCheckbox(size_hint=(.05, .15))
+                self.clausulas = TextInput(size_hint=(.85, .3), multiline=True)
+
+                self.ids.grid_clausulas.add_widget(self.checks)
+                self.ids.grid_clausulas.add_widget(self.clausulas)
+                self.infos.append(self.clausulas)
+                self.lista_check.append(self.checks)
+
+            for index, row in enumerate(texto_clausulas):
                 self.infos[index].text = row
 
     def salvar(self):
         # ============================== GUARDAR DADOS ========================================#
-        # lista_nova = []
-        # lista_entr = []
-        # cont = 0
-        # for i in self.entradas:
-        #     lista_entr.append(i.text)
-        #     cont += 1
-        #     if cont == 3:
-        #         lista2 = lista_entr.copy()
-        #         lista_nova.extend([lista2])
-        #
-        #         lista_entr.clear()
-        #         cont = 0
-        #
-        # lista_nova_mat = []
-        # lista_entr_mat = []
-        # cont = 0
-        # for i in self.entradas_mat:
-        #     lista_entr_mat.append(i.text)
-        #     cont += 1
-        #     if cont == 8:
-        #         lista3 = lista_entr_mat.copy()
-        #         lista_nova_mat.extend([lista3])
-        #
-        #         lista_entr_mat.clear()
-        #         cont = 0
-        # print(lista_nova_mat)
-        # dados_salvos = []
-        # dados_salvos.extend([datetime.now().strftime('%d/%m/%Y, %H:%M:%S'), self.ids.gere.text, self.ids.proc.text,
-        #                      self.ids.req.text, self.ids.orcam.text, self.ids.objcust.text, self.ids.tipo1.text,
-        #                      self.ids.tipo2.text,
-        #                      self.ids.tipo3.text, self.ids.objeto.text, self.ids.valor.text, self.ids.complem.text,
-        #                      lista_nova_mat, self.ids.linha_mat.text, self.ids.serv.text, self.ids.iva.text,
-        #                      lista_nova, self.ids.linha_serv.text, self.ids.obs.text, self.ids.obs_serv.text,
-        #                      self.ids.obs1.text, self.ids.obs2.text, [i.text for i in self.infos],
-        #                      [i.text for i in self.lista_check]])
-        #
-        # with open(self.pasta_principal + "Base.txt",
-        #           "rb+") as fp:  # Pickling
-        #     pickle_list = []
-        #     nova_lista = []
-        #     while True:
-        #         try:
-        #             pickle_list.append(pickle.load(fp))
-        #         except EOFError:
-        #             break
-        #     for i in pickle_list:
-        #         if i[2] != dados_salvos[2]:
-        #             nova_lista.append(i)
-        # with open(self.pasta_principal + "Base.txt", "wb") as fp:
-        #     nova_lista.append(dados_salvos)
-        #     for lis in nova_lista:
-        #         pickle.dump(lis, fp)
+        lista_nova = []
+        lista_entr = []
+        cont = 0
+        for i in self.entradas:
+            lista_entr.append(i.text)
+            cont += 1
+            if cont == 3:
+                lista2 = lista_entr.copy()
+                lista_nova.extend([lista2])
+
+                lista_entr.clear()
+                cont = 0
+
+        lista_nova_mat = []
+        lista_entr_mat = []
+        cont = 0
+        for i in self.entradas_mat:
+            lista_entr_mat.append(i.text)
+            cont += 1
+            if cont == 8:
+                lista3 = lista_entr_mat.copy()
+                lista_nova_mat.extend([lista3])
+
+                lista_entr_mat.clear()
+                cont = 0
+        print(lista_nova_mat)
+        dados_salvos = []
+        dados_salvos.extend([datetime.now().strftime('%d/%m/%Y, %H:%M:%S'), self.ids.gere.text, self.ids.proc.text,
+                             self.ids.req.text, self.ids.orcam_sim.state, self.ids.objcust.text, self.ids.check1.active,
+                             self.ids.check2.active,
+                             self.ids.check3.active, self.ids.objeto.text, self.ids.valor.text, self.ids.complem.text,
+                             lista_nova_mat, self.ids.linha_mat.text, self.ids.serv.text, self.ids.iva.text,
+                             lista_nova, self.ids.linha_serv.text, self.ids.obs.text, self.ids.obs_serv.text,
+                             self.ids.obs1.text, self.ids.obs2.text, [i.text for i in self.infos],
+                             [i.state for i in self.lista_check], self.ids.linha_cont.text, self.ids.linha_obs.text,
+                            getpass.getuser()])
+
+        with open(os.path.join(self.manager.get_screen('pendentes').diretorio, "Base.txt"),
+                  "rb+") as fp:  # Pickling
+            pickle_list = []
+            nova_lista = []
+            while True:
+                try:
+                    pickle_list.append(pickle.load(fp))
+                except EOFError:
+                    break
+            for i in pickle_list:
+                if i[2] != dados_salvos[2]:
+                    nova_lista.append(i)
+        with open(os.path.join(self.manager.get_screen('pendentes').diretorio, "Base.txt"), "wb") as fp:
+            nova_lista.append(dados_salvos)
+            for lis in nova_lista:
+                pickle.dump(lis, fp)
 
         # ============================== CRIAR PDF ============================================#
         self.pdf = FPDF(orientation='P', unit='mm', format='A4')
@@ -698,7 +715,6 @@ class NovaAnalise(Screen):
 
             self.pdf.set_y(self.pdf.get_y() + (float(self.ids.linha_serv.text) * 5))
             if int(self.ids.linha_serv.text) > 0:
-                self.pdf.add_page()
                 self.pdf.rect(5.0, 5.0, 200.0, 280.0)
 
             self.pdf.set_xy(10.0, self.pdf.get_y())
@@ -818,21 +834,22 @@ class NovaAnalise(Screen):
 
         self.pdf.set_y(self.pdf.get_y() + (float(self.ids.linha_cont.text) * 10))
         self.pdf.set_xy(10.0, self.pdf.get_y() + 5)
-        # self.pdf.cell(w=40, h=5, txt='Informações Contratuais : ')
-        # self.pdf.set_xy(10.0, self.pdf.get_y() + 5)
+        self.pdf.cell(w=40, h=5, txt='Informações Contratuais : ')
+        self.pdf.rect(5.0, 5.0, 200.0, 280.0)
+        self.pdf.set_xy(10.0, self.pdf.get_y() + 5)
         for i, item in enumerate(self.lista_check):
             if item.active is True:
                 if self.pdf.get_y() + math.ceil(len(self.infos[i].text) / 105) * 5 > 270:
                     self.pdf.add_page()
-                    self.pdf.rect(5.0, 5.0, 200.0, 285.0)
-                    self.pdf.cell(w=40, h=5, txt='Informações Contratuais : ')
-                    self.pdf.set_xy(10.0, self.pdf.get_y() + 5)
+                    self.pdf.rect(5.0, 5.0, 200.0, 280.0)
+                    self.pdf.set_xy(15.0, self.pdf.get_y() + 5)
+                    self.pdf.multi_cell(w=180, h=5, align='L', txt=self.infos[i].text)
                 else:
                     self.pdf.set_xy(15.0, self.pdf.get_y() + 5)
                     self.pdf.multi_cell(w=180, h=5, align='L', txt=self.infos[i].text)
                 if self.pdf.get_y() > 270:
                     self.pdf.add_page()
-                    self.pdf.rect(5.0, 5.0, 200.0, 285.0)
+                    self.pdf.rect(5.0, 5.0, 200.0, 280.0)
 
         if int(self.ids.linha_cont.text) > 0:
             self.pdf.rect(5.0, 5.0, 200.0, 280.0)
@@ -848,7 +865,8 @@ class NovaAnalise(Screen):
         self.pdf.set_xy(135.0, 270.0)
         self.pdf.cell(w=40, txt='Revisado pela Gerência: ')
         self.pdf.image('usuario1.png' if self.manager.get_screen('pendentes').dados[3].split('@')[0] ==
-                                         getpass.getuser() else 'usuario2.png', y=265.0, h=25.0, w=45.0)
+                                         getpass.getuser() else 'usuario2.png', x=7.0, y=265.0, h=25.0, w=45.0)
+        # self.pdf.image('usuario2.png', x=7.0, y=265.0, h=25.0, w=45.0)
         troca = self.ids.proc.text.replace('/', '-')
         nome_arquivo = 'Análise Tributária - ' + troca + '.pdf'
         self.pdf.output(os.path.join(self.manager.get_screen("pendentes").diretorio, nome_arquivo), 'F')
@@ -861,8 +879,7 @@ class NovaAnalise(Screen):
         email = outlook.CreateItem(0)
 
         # configurar as informações do seu e-mail
-        email.To = self.dados[3] if self.manager.get_screen("pendentes").dados[3].split('@')[0] == \
-                                    getpass.getuser() else self.manager.get_screen("pendentes").self.dados[5]
+        email.To = self.dados[1]
         email.Subject = "E-mail automático Análise Tributária"
         email.HTMLBody = f"""
         <p>Análise Tributária {self.ids.proc.text} está disponível para assinatura.</p>

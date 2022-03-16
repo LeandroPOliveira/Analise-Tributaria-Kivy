@@ -157,7 +157,7 @@
 
     ScrollView:
         bar_width: 10
-
+        scroll_type: ['bars', 'content']
 
         BoxLayout:
             orientation: 'vertical'
@@ -444,7 +444,7 @@
                         cols: 8
                         rows: 61
                         bar_width: 50
-                        padding: [200, 0, 200, 0]
+                        padding: [250, 0, 250, 0]
 
 
 
@@ -474,7 +474,7 @@
 
             GridLayout:
                 cols:1
-                size_hint: 1, .12
+                size_hint: 1, .1
 
                 FloatLayout:
 
@@ -525,7 +525,7 @@
                         pos_hint: {'x':0.68, 'y':0}
 
 
-
+            # ================================== TABELA SERVIÇOS====================================================#
             GridLayout:
                 cols:1
                 size_hint: 1, .08
@@ -545,7 +545,24 @@
                         cols: 3
                         rows: 90
                         bar_width: 50
-                        padding: [300, 0, 300, 0]
+                        padding: [350, 0, 350, 0]
+
+            GridLayout:
+                cols:1
+                size_hint: 1, .02
+
+                FloatLayout:
+                    size: root.width, root.height
+                    MDRectangleFlatButton:
+                        text: 'Limpar Campos'
+                        font_size: 18
+                        pos_hint: {'x': .45, 'y': 0.05}
+                        size_hint: .1, .15
+                        text_color: (1,1,1,1)
+                        line_color: (1,1,1,1)
+                        md_bg_color: (0/255,174/255,0/255,1)
+                        on_press:
+                            root.limpar_serv()
 
 
             GridLayout:
@@ -616,8 +633,8 @@
                         size_hint_y: None
                         height: self.minimum_height
                         row_default_height: 100
-                        cols: 3
-                        rows: 17
+                        cols: 2
+                        rows: 16
                         bar_width: 50
                         padding: [250, 0, 250, 0]
                         spacing: 20
@@ -656,7 +673,7 @@
                         text: '0'
                         id: linha_mat
                         hint_text: "Quebra Material"
-                        pos_hint: {'x':0.8, 'y':.3}
+                        pos_hint: {'x':0.8, 'y':.5}
                         size_hint: (.1, .3)
                         fill_color: 0, 0, 0, .4
                         write_tab: False
@@ -665,7 +682,7 @@
                         text: '0'
                         id: linha_serv
                         hint_text: "Quebra Serviço"
-                        pos_hint: {'x':0.8, 'y':0}
+                        pos_hint: {'x':0.8, 'y':0.1}
                         size_hint: (.1, .3)
                         fill_color: 0, 0, 0, .4
                         write_tab: False
@@ -674,7 +691,7 @@
                         text: '0'
                         id: linha_obs
                         hint_text: "Quebra Observações"
-                        pos_hint: {'x':0.1, 'y':0.3}
+                        pos_hint: {'x':0.1, 'y':0.5}
                         size_hint: (.1, .3)
                         fill_color: 0, 0, 0, .4
                         write_tab: False
@@ -683,10 +700,11 @@
                         text: '0'
                         id: linha_cont
                         hint_text: "Quebra Clausulas"
-                        pos_hint: {'x':0.1, 'y':0.}
+                        pos_hint: {'x':0.1, 'y':0.1}
                         size_hint: (.1, .3)
                         fill_color: 0, 0, 0, .4
                         write_tab: False
+
 WindowManager:
 
     TelaLogin:
