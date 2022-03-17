@@ -88,7 +88,7 @@ class AnalisesPendentes(Screen):
         # Criar a marca d'agua com a assinatura
         c = canvas.Canvas('watermark.pdf')
         # Desenhar a imagem na posição x e y.
-        c.drawImage('gestor.png', 440, 30, 100, 60, mask='auto')
+        c.drawImage(getpass.getuser() + 'png', 440, 30, 100, 60, mask='auto')
         c.save()
         # Buscar o arquivo da marca d'agua criado
         watermark = PdfFileReader(open(os.path.join('watermark.pdf'), 'rb'))
@@ -142,7 +142,7 @@ class AnalisesPendentes(Screen):
         email = outlook.CreateItem(0)
 
         # configurar as informações do seu e-mail
-        email.To = self.manager.get_screen("nova").ids.linha_obs.text = self.temp_list[int(verinfo3)][26]
+        email.To = self.dados[2]
         # email.To = self.dados[3] if self.manager.get_screen("pendentes").dados[3].split('@')[0] == \
         #                             getpass.getuser() else self.manager.get_screen("pendentes").self.dados[5]
         email.Subject = "E-mail automático Análise Tributária"
@@ -864,8 +864,7 @@ class NovaAnalise(Screen):
         self.pdf.line(130.0, 265.0, 130.0, 285.0)
         self.pdf.set_xy(135.0, 270.0)
         self.pdf.cell(w=40, txt='Revisado pela Gerência: ')
-        self.pdf.image('usuario1.png' if self.manager.get_screen('pendentes').dados[3].split('@')[0] ==
-                                         getpass.getuser() else 'usuario2.png', x=7.0, y=265.0, h=25.0, w=45.0)
+        self.pdf.image(getpass.getuser() + 'png', x=7.0, y=265.0, h=25.0, w=45.0)
         # self.pdf.image('usuario2.png', x=7.0, y=265.0, h=25.0, w=45.0)
         troca = self.ids.proc.text.replace('/', '-')
         nome_arquivo = 'Análise Tributária - ' + troca + '.pdf'

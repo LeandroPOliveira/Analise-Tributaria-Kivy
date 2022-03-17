@@ -14,47 +14,52 @@
         Image:
 
         MDRectangleFlatButton:
-            size_hint: (.6, .7)
-            pos_hint: {'x': .2, 'y': .15}
+            size_hint: (.6, .65)
+            pos_hint: {'x': .2, 'y': .175}
             font_size: 20
             text_color:
             line_color: (0/255,174/255,0/255,1)
             md_bg_color: (1,1,1,1)
 
 
-        Label:
+        MDLabel:
             text: 'ANÁLISE TRIBUTÁRIA'
-            pos_hint: {'x':0.4, 'y':0.65}
+            font_name: 'Roboto-Bold'
+            pos_hint: {'x':0.35, 'y':0.65}
+            halign: 'center'
             color: (0,0,0,1)
-            size_hint: (.2, .1)
-            font_size: 30
+            size_hint: (.3, .1)
+            font_size: 34
 
-        Label:
-            text: 'Selecione a opção:'
-            pos_hint: {'x':0.4, 'y':0.55}
-            color: (43/255, 197/255, 232/255, 1)
+        MDLabel:
+            text: 'Selecione uma opção:'
+            pos_hint: {'x':0.4, 'y':0.525}
+            color: (11/255, 156/255, 49/255, 1)
+            halign: 'center'
             size_hint: (.2, .1)
             font_size: 25
 
         MDRectangleFlatButton:
-            size_hint: (.15, .1)
-            text: 'Análises \nPendentes'
-            font_size: 22
+            size_hint: (.14, .1)
+            text: 'Validar'
+            font_name: 'Roboto-Bold'
+            font_size: 26
             bold: True
-            pos_hint: {'x':0.25, 'y':0.45}
+            pos_hint: {'x':0.26, 'y':0.4}
             text_size: self.width, None
             text_color: (1,1,1,1)
-            line_color: (1,1,1,1)
+            line_color: (141/255,240/255,168/255,1)
             md_bg_color: (0/255,174/255,0/255,1)
             on_release:
                 app.root.current = 'pendentes'
 
 
         MDRectangleFlatButton:
-            size_hint: (.15, .1)
-            text: 'Nova Análise'
-            font_size: 22
-            pos_hint: {'x':0.425, 'y':0.45}
+            size_hint: (.14, .1)
+            text: 'Criar'
+            font_name: 'Roboto-Bold'
+            font_size: 26
+            pos_hint: {'x':0.43, 'y':0.4}
             text_size: self.width, None
             text_color: (1,1,1,1)
             line_color: (1,1,1,1)
@@ -63,10 +68,11 @@
                 app.root.current = 'nova'
 
         MDRectangleFlatButton:
-            size_hint: (.15, .1)
-            text: 'Carregar \nAnálise'
-            font_size: 22
-            pos_hint: {'x':0.6, 'y':0.45}
+            size_hint: (.14, .1)
+            text: 'Carregar'
+            font_name: 'Roboto-Bold'
+            font_size: 26
+            pos_hint: {'x':0.6, 'y':0.4}
             text_size: self.width, None
             text_color: (1,1,1,1)
             line_color: (1,1,1,1)
@@ -86,15 +92,22 @@
 
         Image:
 
-        MDIconButton:
-            icon: 'arrow-left-bold-outline'
-            icon_size: '50dp'
-            pos_hint: {'x':0, 'y':0.9}
+        MDRectangleFlatIconButton:
+            icon: "arrow-left-bold-outline"
+            text: "Voltar"
+            font_size: 18
             theme_text_color: "Custom"
-            text_color: (36/255,100/255,203/255,1)
+            text_color: (1,1,1,1)
+            line_color: (0/255,174/255,0/255,1)
+            theme_icon_color: "Custom"
+            icon_color: (1,1,1,1)
+            md_bg_color: (0/255,174/255,0/255,1)
+            pos_hint: {'x': 0.02, 'y': 0.9}
             on_press:
                 app.root.current = 'login'
                 root.manager.transition.direction = 'right'
+
+
 
         MDRectangleFlatButton:
             text: 'Assinar'
@@ -142,9 +155,8 @@
         Image:
 
         MDIconButton:
-            icon: 'arrow-left-bold-outline'
-            icon_size: '50dp'
-            pos_hint: {'x':0.01, 'y':0.9}
+            icon: 'arrow-left-bold-outline.png'
+            pos_hint: {'x':0.02, 'center_y':0.95}
             theme_text_color: "Custom"
             text_color: (36/255,100/255,203/255,1)
             on_press:
@@ -266,9 +278,9 @@
                         size_hint: (.2, .1)
                         text_size: self.size
                         valign: 'center'
-                        halign: 'left'
+                        halign: 'center'
                         pos_hint: {'x':0.4, 'y':0.6}
-                        color: (43/255, 197/255, 232/255, 1)
+
                         font_size: 20
                         padding: 10, 10
 
