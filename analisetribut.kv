@@ -52,6 +52,7 @@
             md_bg_color: (0/255,174/255,0/255,1)
             on_release:
                 app.root.current = 'pendentes'
+                root.manager.transition.direction = 'right'
 
 
         MDRectangleFlatButton:
@@ -105,7 +106,7 @@
             pos_hint: {'x': 0.02, 'y': 0.9}
             on_press:
                 app.root.current = 'login'
-                root.manager.transition.direction = 'right'
+                root.manager.transition.direction = 'left'
 
 
 
@@ -154,14 +155,20 @@
 
         Image:
 
-        MDIconButton:
-            icon: 'arrow-left-bold-outline.png'
-            pos_hint: {'x':0.02, 'center_y':0.95}
+        MDRectangleFlatIconButton:
+            icon: "arrow-left-bold-outline"
+            text: "Voltar"
+            font_size: 18
             theme_text_color: "Custom"
-            text_color: (36/255,100/255,203/255,1)
+            text_color: (1,1,1,1)
+            line_color: (0/255,174/255,0/255,1)
+            theme_icon_color: "Custom"
+            icon_color: (1,1,1,1)
+            md_bg_color: (0/255,174/255,0/255,1)
+            pos_hint: {'x': 0.02, 'y': 0.9}
             on_press:
                 app.root.current = 'login'
-                root.manager.transition.direction = 'right'
+                root.manager.transition.direction = 'left'
 
 <NovaAnalise>:
     name: 'nova'
@@ -199,12 +206,17 @@
                         halign: 'center'
 
 
-                    MDIconButton:
-                        icon: 'arrow-left-bold-outline'
-                        icon_size: '50dp'
-                        pos_hint: {'x':0.01, 'y':0.9}
+                    MDRectangleFlatIconButton:
+                        icon: "arrow-left-bold-outline"
+                        text: "Voltar"
+                        font_size: 18
                         theme_text_color: "Custom"
-                        text_color: (36/255,100/255,203/255,1)
+                        text_color: (1,1,1,1)
+                        line_color: (0/255,174/255,0/255,1)
+                        theme_icon_color: "Custom"
+                        icon_color: (1,1,1,1)
+                        md_bg_color: (0/255,174/255,0/255,1)
+                        pos_hint: {'x': 0.02, 'y': 0.9}
                         on_press:
                             app.root.current = 'login'
                             root.manager.transition.direction = 'right'
@@ -456,7 +468,7 @@
                         cols: 8
                         rows: 61
                         bar_width: 50
-                        padding: [250, 0, 250, 0]
+                        padding: [300, 0, 300, 0]
 
 
 

@@ -2,8 +2,6 @@ import getpass
 import math
 import pickle
 from kivy.clock import Clock
-from kivy.config import Config
-from kivy.properties import ObjectProperty
 from kivy.uix.textinput import TextInput
 from kivymd.app import MDApp
 from kivymd.uix.datatables import MDDataTable
@@ -17,18 +15,12 @@ import pandas as pd
 import win32clipboard
 from fpdf import FPDF
 from kivymd.uix.dialog import MDDialog
-from kivymd.uix.label import MDLabel
 from kivymd.uix.selectioncontrol import MDCheckbox
 from kivymd.uix.textfield import MDTextFieldRect
 import glob
 from reportlab.pdfgen import canvas
 from PyPDF2 import PdfFileWriter, PdfFileReader
 import win32com.client as win32
-
-Config.set('graphics', 'resizable', '1')
-Config.set('graphics', 'width', '1280')
-Config.set('graphics', 'height', '720')
-Config.write()
 
 
 class TelaLogin(Screen):
@@ -41,15 +33,25 @@ class AnalisesPendentes(Screen):
         self.arquivos_assinatura = []
         self.arquivos_pdf = []
         self.tabela_pendentes = None
-        with open('dados.txt', 'r') as bd:
+
+        # Criar a marca d'agua com a assinatura
+        c = canvas.Canvas('watermark.pdf')
+        # Desenhar a imagem na posição x e y.
+        c.drawImage(getpass.getuser() + '.png', 440, 30, 100, 60, mask='auto')
+        c.save()
+        # Buscar o arquivo da marca d'agua criado
+        self.watermark = PdfFileReader(open(os.path.join('watermark.pdf'), 'rb'))
+
+        # Abrir arquivo contendo a pasta de trabalho e os emails dos usuarios
+        with open('dados.txt', 'r', encoding='UTF-8') as bd:
             self.dados = bd.readlines()
             self.diretorio = self.dados[0].rstrip('\n')
 
-    def add_datatable(self):  # tabela com as análises pendentes
+    def add_datatable(self):  # Adicionar tabela com as análises pendentes
         self.arquivos_assinatura.clear()
         self.arquivos_pdf.clear()
         self.arquivos_diretorio = os.listdir(self.diretorio)
-        for item in self.arquivos_diretorio:
+        for item in self.arquivos_diretorio:  # Selecionar arquivos pdf para mostrar na tabela
             if item.endswith('.pdf') is True and item != 'watermark.pdf':
                 dt_modificacao = os.path.getctime(self.diretorio)
                 dt_modificacao = datetime.fromtimestamp(dt_modificacao)
@@ -67,14 +69,14 @@ class AnalisesPendentes(Screen):
 
         self.add_widget(self.tabela_pendentes)
 
-        self.tabela_pendentes.bind(on_row_press=self.row_checked)
-        self.tabela_pendentes.bind(on_check_press=self.checked)
+        self.tabela_pendentes.bind(on_row_press=self.abrir_pdf)
+        self.tabela_pendentes.bind(on_check_press=self.marcar_pdf)
 
-    def checked(self, instance_row, current_row):
+    def marcar_pdf(self, instance_row, current_row):  # Marcar arquivos para assinar
         self.arquivos_assinatura.append(current_row[0])
         print(current_row)
 
-    def row_checked(self, instance_table, current_row):
+    def abrir_pdf(self, instance_table, current_row):  # Abrir pdf
         if self.tabela_pendentes.get_row_checks():
             pass
         else:
@@ -84,15 +86,7 @@ class AnalisesPendentes(Screen):
                 self.dialog = MDDialog(text="Clique sobre o texto Análise Tributária...!", radius=[20, 7, 20, 7], )
                 self.dialog.open()
 
-    def assinatura(self):
-        # Criar a marca d'agua com a assinatura
-        c = canvas.Canvas('watermark.pdf')
-        # Desenhar a imagem na posição x e y.
-        c.drawImage(getpass.getuser() + 'png', 440, 30, 100, 60, mask='auto')
-        c.save()
-        # Buscar o arquivo da marca d'agua criado
-        watermark = PdfFileReader(open(os.path.join('watermark.pdf'), 'rb'))
-
+    def assinatura(self):  # Assinar arquivos selecionados
         self.salvos = []
         for n, arquivo in enumerate(self.arquivos_assinatura):
 
@@ -108,7 +102,7 @@ class AnalisesPendentes(Screen):
                 for page_number in range(page_count):
                     input_page = input_file.getPage(page_number)
                     if page_number == page_count - 1:
-                        input_page.mergePage(watermark.getPage(0))
+                        input_page.mergePage(self.watermark.getPage(0))
                     self.output_file.addPage(input_page)
 
                 self.dir_acima = self.diretorio.split('\\')
@@ -122,7 +116,7 @@ class AnalisesPendentes(Screen):
                 except:
                     os.chdir(self.dir_acima)
 
-                # finally, write "output" to document-output.pdf
+                # Gerar o novo arquivo pdf assinado
                 with open('Análise Tributária - ' + str(arquivo[21:]), "wb") as outputStream:
                     self.output_file.write(outputStream)
 
@@ -130,44 +124,38 @@ class AnalisesPendentes(Screen):
             os.remove(arquivo)
             self.salvos.append(n)
 
+
         troca = 0
         for i in self.salvos:
             self.arquivos_pdf.pop(i - troca)
-            # self.lista.pop(i - troca)
             troca += 1
 
         outlook = win32.Dispatch('outlook.application')
-
         # criar um email
         email = outlook.CreateItem(0)
-
-        # configurar as informações do seu e-mail
+        # configurar as informações do e-mail e selecionar o endereço pelo arquivo de texto
         email.To = self.dados[2]
-        # email.To = self.dados[3] if self.manager.get_screen("pendentes").dados[3].split('@')[0] == \
-        #                             getpass.getuser() else self.manager.get_screen("pendentes").self.dados[5]
         email.Subject = "E-mail automático Análise Tributária"
         email.HTMLBody = f"""
                     <p>Análise(s) Tributária(s) assinada(s) com sucesso.</p>
 
                     """
-
         email.Send()
 
         self.dialog = MDDialog(text='Análise(s) assinada(s) com sucesso!', radius=[20, 7, 20, 7], )
         self.dialog.open()
 
-        self.add_datatable()
-
+        self.add_datatable()  # Atualizar lista de análises
 
 
 class CarregarAnalise(Screen):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
-
-    def carregar_dados(self):
-
         self.lista = []
         self.temp_list = []
+        self.data_tables = None
+
+    def carregar_dados(self):
         with open(os.path.join(self.manager.get_screen('pendentes').diretorio, 'Base.txt'), "rb") as carga:
             while True:
                 try:
@@ -181,24 +169,19 @@ class CarregarAnalise(Screen):
         if len(self.lista) == 1: self.lista.append(('', ''))
 
         self.data_tables = MDDataTable(pos_hint={'center_x': 0.5, 'center_y': 0.5},
-                                       size_hint=(0.5, 0.75), rows_num=10,
+                                       size_hint=(0.4, 0.75), rows_num=10,
                                        check=True, use_pagination=True,
                                        background_color_header=get_color_from_hex("#0d7028"),
 
-                                       column_data=[("[color=#ffffff]Análise[/color]", dp(60)),
-                                                    ("[color=#ffffff]Data[/color]", dp(60))],
+                                       column_data=[("[color=#ffffff]Análise[/color]", dp(70)),
+                                                    ("[color=#ffffff]Data[/color]", dp(70))],
                                        row_data=self.lista, elevation=1)
 
         self.add_widget(self.data_tables)
 
-        self.data_tables.bind(on_check_press=self.checked)
-        self.data_tables.bind(on_row_press=self.row_checked)
+        self.data_tables.bind(on_row_press=self.abrir_dados)
 
-    def checked(self, instance_table, current_row):
-        pass
-        # self.lista2.append(current_row[0])
-
-    def row_checked(self, instance_table, current_row):
+    def abrir_dados(self, instance_table, current_row): # Pegar informações do txt e enviar para os inputs
         verinfo3 = int(current_row.index / 2)
         self.temp_list.sort(key=lambda lista: datetime.strptime(lista[0], '%d/%m/%Y, %H:%M:%S'), reverse=True)
         self.manager.get_screen("nova").ids.gere.text = self.temp_list[int(verinfo3)][1]
@@ -238,7 +221,6 @@ class CarregarAnalise(Screen):
         self.manager.get_screen("nova").ids.linha_cont.text = self.temp_list[int(verinfo3)][24]
         self.manager.get_screen("nova").ids.linha_obs.text = self.temp_list[int(verinfo3)][25]
         self.manager.current = 'nova'
-
 
 
 class NovaAnalise(Screen):
@@ -297,7 +279,6 @@ class NovaAnalise(Screen):
     def colar2(self, instance, widget):
         cad_mat = pd.read_excel('material.xlsx', sheet_name='materiais', converters={'Material': str, 'IPI': str})
         cad_mat = pd.DataFrame(cad_mat)
-        # cad_mat['Material'] = cad_mat['Material'].astype(str)
 
         for i, l in enumerate(self.entradas_mat):
             if i % 8 == 0:
@@ -322,6 +303,7 @@ class NovaAnalise(Screen):
                     self.posicao1 = int(i / 8) if i > 0 else i
                     print(self.posicao1)
                     break
+
         cad_mat = pd.read_excel('material.xlsx', sheet_name='materiais', converters={'Material': str, 'IPI': str})
         cad_mat = pd.DataFrame(cad_mat)
         cad_mat['Material'] = cad_mat['Material'].astype(str)
@@ -505,7 +487,7 @@ class NovaAnalise(Screen):
 
                 lista_entr_mat.clear()
                 cont = 0
-        print(lista_nova_mat)
+
         dados_salvos = []
         dados_salvos.extend([datetime.now().strftime('%d/%m/%Y, %H:%M:%S'), self.ids.gere.text, self.ids.proc.text,
                              self.ids.req.text, self.ids.orcam_sim.state, self.ids.objcust.text, self.ids.check1.active,
@@ -632,7 +614,7 @@ class NovaAnalise(Screen):
         for line in self.manager.get_screen("nova").ids.serv.text:
             if "\n" in line:
                 cont += 1
-        print(cont)
+
 
         if self.entradas_mat[0].text != '':
             self.pdf.set_y(self.pdf.get_y() + (float(self.ids.linha_mat.text) * 5))
@@ -833,8 +815,11 @@ class NovaAnalise(Screen):
         # =============================  INFORMAÇÕES CONTRATUAIS ===========================================#
 
         self.pdf.set_y(self.pdf.get_y() + (float(self.ids.linha_cont.text) * 10))
-        self.pdf.set_xy(10.0, self.pdf.get_y() + 5)
-        self.pdf.cell(w=40, h=5, txt='Informações Contratuais : ')
+        rel_check = []
+        [rel_check.append(i.active) for i in self.lista_check]
+        if True in rel_check:
+            self.pdf.set_xy(10.0, self.pdf.get_y() + 5)
+            self.pdf.cell(w=40, h=5, txt='Informações Contratuais : ')
         self.pdf.rect(5.0, 5.0, 200.0, 280.0)
         self.pdf.set_xy(10.0, self.pdf.get_y() + 5)
         for i, item in enumerate(self.lista_check):
@@ -864,7 +849,7 @@ class NovaAnalise(Screen):
         self.pdf.line(130.0, 265.0, 130.0, 285.0)
         self.pdf.set_xy(135.0, 270.0)
         self.pdf.cell(w=40, txt='Revisado pela Gerência: ')
-        self.pdf.image(getpass.getuser() + 'png', x=7.0, y=265.0, h=25.0, w=45.0)
+        self.pdf.image(getpass.getuser() + '.png', x=7.0, y=265.0, h=25.0, w=45.0)
         # self.pdf.image('usuario2.png', x=7.0, y=265.0, h=25.0, w=45.0)
         troca = self.ids.proc.text.replace('/', '-')
         nome_arquivo = 'Análise Tributária - ' + troca + '.pdf'
@@ -878,17 +863,15 @@ class NovaAnalise(Screen):
         email = outlook.CreateItem(0)
 
         # configurar as informações do seu e-mail
-        email.To = self.dados[1]
+        email.To = self.manager.get_screen("pendentes").dados[1]
         email.Subject = "E-mail automático Análise Tributária"
         email.HTMLBody = f"""
         <p>Análise Tributária {self.ids.proc.text} está disponível para assinatura.</p>
 
         """
-
-        # anexo = "C://Users/joaop/Downloads/arquivo.xlsx"
-        # email.Attachments.Add(anexo)
-
         email.Send()
+        self.dialog = MDDialog(text='Análise enviada com sucesso!', radius=[20, 7, 20, 7], )
+        self.dialog.open()
 
 
 class WindowManager(ScreenManager):
@@ -898,7 +881,6 @@ class WindowManager(ScreenManager):
 class Example(MDApp):
 
     def build(self):
-        self.items = [{'icon': 'Sim'}, {'icon': 'Não'}]
         return Builder.load_file('analisetribut.kv')
 
 
