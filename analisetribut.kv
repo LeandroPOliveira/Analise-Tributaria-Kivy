@@ -21,7 +21,6 @@
             line_color: (0/255,174/255,0/255,1)
             md_bg_color: (1,1,1,1)
 
-
         MDLabel:
             text: 'ANÁLISE TRIBUTÁRIA'
             font_name: 'Roboto-Bold'
@@ -53,7 +52,6 @@
             on_release:
                 app.root.current = 'pendentes'
                 root.manager.transition.direction = 'right'
-
 
         MDRectangleFlatButton:
             size_hint: (.14, .1)
@@ -108,8 +106,6 @@
                 app.root.current = 'login'
                 root.manager.transition.direction = 'left'
 
-
-
         MDRectangleFlatButton:
             text: 'Assinar'
             bold: True
@@ -146,7 +142,6 @@
 <CarregarAnalise>:
     name: 'carregar'
 
-
     on_enter:
         root.carregar_dados()
 
@@ -173,7 +168,6 @@
 <NovaAnalise>:
     name: 'nova'
 
-
     ScrollView:
         bar_width: 10
         scroll_type: ['bars', 'content']
@@ -189,22 +183,20 @@
                     size: self.size
                     source: "image3.jpg"
 
+            #============================================== DADOS INICIAIS ===========================================#
             GridLayout:
                 cols:1
                 size_hint: 1, .20
 
-
                 FloatLayout:
 
                     size: root.width, root.height
-
 
                     MDLabel:
                         text: 'Análise Contábil e Tributária para Processos de Licitação e ou Contratação Direta'
                         pos_hint: {'x':0.1, 'y':0.85}
                         size_hint: .8, .2
                         halign: 'center'
-
 
                     MDRectangleFlatIconButton:
                         icon: "arrow-left-bold-outline"
@@ -230,19 +222,16 @@
                         md_bg_color: (1,1,1,1)
                         ripple_scale: 0
 
-
                     MDTextField:
                         id: gere
                         hint_text: "Gerência Contratante"
                         pos_hint: {'x':0.2, 'y':0.80}
-
 
                     MDTextField:
                         id: proc
                         hint_text: 'Nº Processo GECBS'
                         helper_text: 'Ex: DV-001-2022'
                         pos_hint: {'x':0.425, 'y':0.8}
-
 
                     MDTextField:
                         id: req
@@ -284,7 +273,6 @@
                         ripple_scale: 0
                         pos_hint: {'x': 0.735, 'y': 0.7}
 
-
                     MDLabel:
                         text: 'Tipo de Análise:'
                         size_hint: (.2, .1)
@@ -322,11 +310,9 @@
                         text: 'Material'
                         pos_hint: {'x':0.45, 'y':0.525}
 
-
                     MDLabel:
                         text: 'Serviço com Fornc. Material'
                         pos_hint: {'x':0.65, 'y':0.525}
-
 
                     MDRectangleFlatButton:
                         size_hint: (.8, .4)
@@ -388,8 +374,6 @@
                         size_hint: .3, .1
                         pos_hint: {'x':0.4, 'y':0.6}
 
-
-
                     Check:
                         id: check_iva
                         ripple_scale: 0
@@ -413,7 +397,6 @@
                         group: False
                         on_active:
                             root.preenche_aliq()
-
 
                     MDLabel:
                         text: 'Código'
@@ -447,11 +430,9 @@
                         text: 'COFINS'
                         pos_hint: {'x':0.79, 'y':0.02}
 
-
             GridLayout:
                 cols:1
                 size_hint: 1, .1
-
 
                 ScrollView:
                     size_hint: .8, .1
@@ -470,8 +451,6 @@
                         bar_width: 50
                         padding: [300, 0, 300, 0]
 
-
-
             GridLayout:
                 cols:1
                 size_hint: 1, .05
@@ -487,8 +466,7 @@
                         line_color: (1,1,1,1)
                         md_bg_color: (0/255,174/255,0/255,1)
                         on_press:
-                            root.limpar()
-
+                            root.limpa_dados_mat()
 
                     MDLabel:
                         text: 'Informações Tributárias - Serviços'
@@ -496,6 +474,7 @@
                         size_hint: .3, .1
                         halign: 'center'
 
+            #============================================== SERVICOS ================================================#
             GridLayout:
                 cols:1
                 size_hint: 1, .1
@@ -528,7 +507,7 @@
                         multiline: True
                         cursor_home: True
                         on_focus:
-                            root.busca_servico()
+                            root.busca_dados_lei_116()
 
                     MDTextField:
                         id: iva
@@ -548,8 +527,6 @@
                         text: 'C.C.'
                         pos_hint: {'x':0.68, 'y':0}
 
-
-            # ================================== TABELA SERVIÇOS====================================================#
             GridLayout:
                 cols:1
                 size_hint: 1, .08
@@ -586,9 +563,9 @@
                         line_color: (1,1,1,1)
                         md_bg_color: (0/255,174/255,0/255,1)
                         on_press:
-                            root.limpar_serv()
+                            root.limpa_dados_serv()
 
-
+            #============================================== OBSERVACOES ==============================================#
             GridLayout:
                 cols:1
                 size_hint: 1, .2
@@ -598,7 +575,6 @@
                     padding: [450, 50, 450, 50]
                     spacing: 20
                     size: root.width, root.height
-
 
                     MDLabel:
                         text: 'Observações'
@@ -629,6 +605,7 @@
                         multiline: True
                         size_hint: (1, .2)
 
+            #============================================== CLAUSULAS ================================================#
             GridLayout:
                 cols:1
                 size_hint: 1, .03
