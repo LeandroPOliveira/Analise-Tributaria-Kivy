@@ -30,6 +30,7 @@ class TelaLogin(Screen):
 class AnalisesPendentes(Screen):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
+        self.dialog = None
         self.arquivos_assinatura = []
         self.arquivos_pdf = []
         self.tabela_pendentes = None
