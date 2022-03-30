@@ -169,9 +169,9 @@ class CarregarAnalise(Screen):
 
         self.dados_tabela = MDDataTable(pos_hint={'center_x': 0.5, 'center_y': 0.5},
                                         size_hint=(0.4, 0.75), rows_num=10,
-                                        check=True, use_pagination=True,
+                                        use_pagination=True,
                                         background_color_header=get_color_from_hex("#0d7028"),
-
+                                        check=True,
                                         column_data=[("[color=#ffffff]Análise[/color]", dp(70)),
                                                      ("[color=#ffffff]Data[/color]", dp(70))],
                                         row_data=self.lista_analises, elevation=1)
