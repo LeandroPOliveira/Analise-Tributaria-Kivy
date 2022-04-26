@@ -762,7 +762,7 @@ class NovaAnalise(Screen):
             self.pdf.multi_cell(w=180, h=5, txt='Informações Tributárias: ')
             self.pdf.set_xy(15.0, self.pdf.get_y() + 5)
             self.pdf.set_font('Arial', 'B', 10)
-            self.pdf.multi_cell(w=180, h=5, txt=self.ids.serv.text)
+            self.pdf.multi_cell(w=180, h=5, txt=self.ids.serv.text.encode('latin-1', 'ignore').decode("latin-1"))
             self.pdf.rect(7.5, q2 - 3, 195.0, self.pdf.get_y() - q2 + 7.5)
             self.pdf.set_xy(10.0, self.pdf.get_y() + 5)
             self.pdf.multi_cell(w=180, h=5, txt=self.ids.obs_serv.text)
