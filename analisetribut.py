@@ -54,18 +54,19 @@ class AnalisesPendentes(Screen):
         self.arquivos_diretorio = os.listdir(self.diretorio)
         for item in self.arquivos_diretorio:  # Selecionar arquivos pdf para mostrar na tabela
             if item.endswith('.pdf') is True and item != 'watermark.pdf':
-                dt_modificacao = os.path.getctime(self.diretorio)
+                dt_modificacao = os.path.getctime(os.path.join(self.diretorio, item))
                 dt_modificacao = datetime.fromtimestamp(dt_modificacao)
                 data = date.strftime(dt_modificacao, '%d/%m/%Y')
                 self.arquivos_pdf.append((item, data))
+                print(data)
         if len(self.arquivos_pdf) == 1:
             self.arquivos_pdf.append(('', ''))
 
         self.tabela_pendentes = MDDataTable(pos_hint={'center_x': 0.5, 'center_y': 0.5},
                                             size_hint=(0.4, 0.55),
-                                            check=True, use_pagination=True,
+                                            check=True, use_pagination=True, rows_num=10,
                                             background_color_header=get_color_from_hex("#0d7028"),
-                                            column_data=[("[color=#ffffff]Análise[/color]", dp(90)),
+                                            column_data=[("[color=#ffffff]Análise[/color]", dp(100)),
                                                          ("[color=#ffffff]Data[/color]", dp(30))],
                                             row_data=self.arquivos_pdf, elevation=1)
 
@@ -168,7 +169,7 @@ class CarregarAnalise(Screen):
             self.lista_analises.append(('', ''))
 
         self.dados_tabela = MDDataTable(pos_hint={'center_x': 0.5, 'center_y': 0.5},
-                                        size_hint=(0.4, 0.75), rows_num=10,
+                                        size_hint=(0.6, 0.8), rows_num=20,
                                         use_pagination=True,
                                         background_color_header=get_color_from_hex("#0d7028"),
                                         check=True,
@@ -241,13 +242,13 @@ class NovaAnalise(Screen):
         Clock.schedule_once(self.informacoes_padrao)
 
     def informacoes_padrao(self, dt):
-        self.ids.obs.text = 'Produto para Consumo Final. \nFabricante: Alíquota de ICMS de 18% conforme RICMS-SP/2000,'\
+        self.ids.obs.text = 'Produto para Consumo Final. \nFabricante: Alíquota de ICMS de 18% conforme RICMS-SP/2000,' \
                             ' Livro I, Título III, Capítulo II, Seção II, Artigo 52, Inciso I \nRevendedor: ' \
                             'Informar o ICMS-ST  recolhido anteriormente\n\nEntrega de materiais em local diverso do ' \
                             'destinatário: o endereço deverá constar na nota fiscal em campo específico do xml ' \
                             '(bloco G) e em dados adicionais. (Regime Especial 28558/2018).'
 
-        self.ids.obs1.text = 'Obs 1: Caso o fornecedor possua alguma especificidade que implique tratamento tributário'\
+        self.ids.obs1.text = 'Obs 1: Caso o fornecedor possua alguma especificidade que implique tratamento tributário' \
                              ' diverso do exposto acima, ou seja do regime tributário "SIMPLES NACIONAL" deverá' \
                              '  apresentar documentação hábil que comprove sua condição peculiar, a qual será alvo de' \
                              ' análise prévia pela GECOT.'
