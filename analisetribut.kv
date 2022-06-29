@@ -175,6 +175,8 @@
 
             size: root.width, root.height
 
+            Image:
+
             MDLabel:
                 text: 'Análise Contábil e Tributária para Processos de Licitação e ou Contratação Direta'
                 pos_hint: {'x':0.1, 'y':0.85}
@@ -345,10 +347,10 @@
         #============================================== MATERIAIS ================================================#
         FloatLayout:
 
-
+            size: root.width, root.height
             canvas:
                 Color:
-                    rgb: 1, 1, 1, 1
+                    rgb: 235/255, 245/255, 237/255, 1
                 Rectangle:
                     pos: self.pos
                     size: self.size
@@ -536,7 +538,7 @@
 
             canvas:
                 Color:
-                    rgb: 1, 1, 1, 1
+                    rgb: 235/255, 245/255, 237/255, 1
                 Rectangle:
                     pos: self.pos
                     size: self.size
@@ -631,8 +633,8 @@
                 text: '0'
                 id: linha_mat
                 hint_text: "Quebra Material"
-                pos_hint: {'x':0.8, 'y':.25}
-                size_hint: (.05, .08)
+                pos_hint: {'x':0.85, 'y':.25}
+                size_hint: (.08, .08)
                 fill_color: 0, 0, 0, .4
                 write_tab: False
 
@@ -640,8 +642,8 @@
                 text: '0'
                 id: linha_serv
                 hint_text: "Quebra Serviço"
-                pos_hint: {'x':0.8, 'y':0.1 }
-                size_hint: (.05, .08)
+                pos_hint: {'x':0.85, 'y':0.1 }
+                size_hint: (.08, .08)
                 fill_color: 0, 0, 0, .4
                 write_tab: False
 
@@ -650,7 +652,7 @@
                 id: linha_obs
                 hint_text: "Quebra Observações"
                 pos_hint: {'x':0.1, 'y':0.25}
-                size_hint: (.05, .08)
+                size_hint: (.08, .08)
                 fill_color: 0, 0, 0, .4
                 write_tab: False
 
@@ -659,7 +661,7 @@
                 id: linha_cont
                 hint_text: "Quebra Clausulas"
                 pos_hint: {'x':0.1, 'y':0.1}
-                size_hint: (.05, .08)
+                size_hint: (.08, .08)
                 fill_color: 0, 0, 0, .4
                 write_tab: False
 

@@ -631,14 +631,15 @@ class NovaAnalise(Screen):
                         cont2 = 0
 
             for row in self.data_mat:
-                for datum in row:
+                print(row)
+                for datum in row[:6]:
                     if cont == 1:
                         self.pdf.set_font('') if cont_lista != 0 else self.pdf.set_font('Arial', 'B', 10)
                         self.pdf.set_xy(px, py)
                         self.pdf.multi_cell(w=20, h=5, txt=datum, border=1)
                     elif cont == 2:
                         self.pdf.set_xy(px + 20, py)
-                        self.pdf.multi_cell(w=75, h=5, txt=datum, border=1)
+                        self.pdf.multi_cell(w=75, h=5, txt=datum[:35], border=1)
                     elif cont == 3:
                         self.pdf.set_xy(px + 95, py)
                         self.pdf.multi_cell(w=10, h=5, txt=datum, border=1)
