@@ -109,7 +109,7 @@ class AnalisesPendentes(Screen):
                 self.dir_acima.insert(1, '\\')
                 self.dir_acima = os.path.join(*self.dir_acima[:-1])
                 os.chdir(self.dir_acima)
-                file = glob.glob(str(arquivo[21:32]) + '*')
+                file = glob.glob(str(arquivo[21:29]) + '*')
                 pasta_analise = ''.join(file)
                 try:
                     os.chdir(pasta_analise)
@@ -155,6 +155,7 @@ class CarregarAnalise(Screen):
         self.dados_tabela = None  # Criar Tabela para exibição
 
     def carregar_dados(self):
+        self.temp_list.clear(), self.lista_analises.clear()
         with open(os.path.join(self.manager.get_screen('pendentes').diretorio, 'Base.txt'), "rb") as carga:
             while True:
                 try:
@@ -258,7 +259,7 @@ class NovaAnalise(Screen):
 
     def cria_tabela_materiais(self, dt):
         for i in range(61):
-            for c in range(8):
+            for c in range(6):
                 if c == 1:
                     largura = .2
                 elif c == 0:
@@ -274,7 +275,7 @@ class NovaAnalise(Screen):
                 self.manager.get_screen("nova").ids.grid_teste.add_widget(self.mater)
 
         for i, n in enumerate(self.entradas_mat):
-            if i % 8 == 0:
+            if i % 6 == 0:
                 self.entradas_mat[i].bind(on_text_validate=self.busca_dados_mat_clipboard)
                 self.entradas_mat[i + 1].bind(focus=self.busca_dados_mat)
 
@@ -284,7 +285,7 @@ class NovaAnalise(Screen):
         cad_mat = pd.DataFrame(cad_mat)
 
         for i, l in enumerate(self.entradas_mat):
-            if i % 8 == 0:
+            if i % 6 == 0:
                 if l.text != '' and self.entradas_mat[i + 1].text == '':
                     for index, row in cad_mat.iterrows():
                         if l.text == row['Material']:
@@ -297,21 +298,27 @@ class NovaAnalise(Screen):
 
     def busca_dados_mat_clipboard(self, instance):
         for i, l in enumerate(self.entradas_mat):
-            if i % 8 == 0:
+            if i % 6 == 0:
                 if l.text != '' and self.entradas_mat[i + 1].text == '':
-                    self.posicao = int(i / 8) if i > 0 else i
+                    self.posicao = int(i / 6) if i > 0 else i
                     break
 
         cad_mat = pd.read_excel(os.path.join(self.manager.get_screen("pendentes").diretorio, 'cadastro.xlsx'),
                                 sheet_name='materiais', converters={'Material': str, 'IPI': str})
         cad_mat['Material'] = cad_mat['Material'].astype(str)
         win32clipboard.OpenClipboard()
-        rows = win32clipboard.GetClipboardData()
+        try:
+            rows = win32clipboard.GetClipboardData()
+        except TypeError:
+            rows = ''
         win32clipboard.EmptyClipboard()
         win32clipboard.CloseClipboard()
         rows = rows.split('\n')
+
         rows.pop() if len(rows) > 1 else rows
         for r, val in enumerate(rows):
+            if rows[0] == '':
+                break
             values = val.split('\t')
             if len(values) > 1:
                 del values[1:]
@@ -327,24 +334,24 @@ class NovaAnalise(Screen):
 
     def preenche_iva(self):
         for e, item in enumerate(self.entradas_mat):
-            if e % 8 == 0 and e != 0:
+            if e % 6 == 0 and e != 0:
                 if item.text != '':
                     self.entradas_mat[e + 2].text = self.entradas_mat[2].text
                     self.ids.check_iva.active = False
 
     def preenche_ncm(self):
         for e, item in enumerate(self.entradas_mat):
-            if e % 8 == 0 and e != 0:
+            if e % 6 == 0 and e != 0:
                 if item.text != '':
                     self.entradas_mat[e + 3].text = self.entradas_mat[3].text
 
     def preenche_aliq(self):
         for e, item in enumerate(self.entradas_mat):
-            if e % 8 == 0:
+            if e % 6 == 0:
                 if item.text != '':
                     self.entradas_mat[e + 4].text = '18%'
-                    self.entradas_mat[e + 6].text = '1,65%'
-                    self.entradas_mat[e + 7].text = '7,6%'
+                    # self.entradas_mat[e + 6].text = '1,65%'
+                    # self.entradas_mat[e + 7].text = '7,6%'
 
     def limpa_dados_mat(self):
         for lin in self.entradas_mat:
@@ -466,7 +473,7 @@ class NovaAnalise(Screen):
         for i in self.entradas_mat:
             lista_entr_mat.append(i.text)
             cont += 1
-            if cont == 8:
+            if cont == 6:
                 lista3 = lista_entr_mat.copy()
                 lista_nova_mat.extend([lista3])
 
@@ -616,7 +623,7 @@ class NovaAnalise(Screen):
             px = 10
             py = self.pdf.get_y()
 
-            self.data_mat = [['CÓDIGO', 'DESCRIÇÃO', 'IVA', 'NCM', 'ICMS', 'IPI', 'PIS', 'COFINS']]
+            self.data_mat = [['CÓDIGO', 'DESCRIÇÃO', 'IVA', 'NCM', 'ICMS', 'IPI']]
             self.data_mat[1:].clear()
             cont2 = 0
             mat_list = []
@@ -624,15 +631,14 @@ class NovaAnalise(Screen):
                 if lin.text != '':
                     mat_list.append(lin.text)
                     cont2 += 1
-                    if cont2 == 8:
+                    if cont2 == 6:
                         lista_nova_mat = mat_list.copy()
                         self.data_mat.append(lista_nova_mat)
                         mat_list.clear()
                         cont2 = 0
 
             for row in self.data_mat:
-                print(row)
-                for datum in row[:6]:
+                for datum in row:
                     if cont == 1:
                         self.pdf.set_font('') if cont_lista != 0 else self.pdf.set_font('Arial', 'B', 10)
                         self.pdf.set_xy(px, py)
