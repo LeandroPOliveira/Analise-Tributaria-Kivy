@@ -30,6 +30,7 @@ class TelaLogin(Screen):
 class AnalisesPendentes(Screen):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
+        self.dialog_permissao_assinat = None
         self.dialog = None
         self.arquivos_assinatura = []
         self.arquivos_pdf = []
@@ -58,7 +59,6 @@ class AnalisesPendentes(Screen):
                 dt_modificacao = datetime.fromtimestamp(dt_modificacao)
                 data = date.strftime(dt_modificacao, '%d/%m/%Y')
                 self.arquivos_pdf.append((item, data))
-                print(data)
         if len(self.arquivos_pdf) == 1:
             self.arquivos_pdf.append(('', ''))
 
@@ -77,7 +77,6 @@ class AnalisesPendentes(Screen):
 
     def marcar_pdf(self, instance_row, current_row):  # Marcar arquivos para assinar
         self.arquivos_assinatura.append(current_row[0])
-        print(current_row)
 
     def abrir_pdf(self, instance_table, current_row):  # Abrir pdf
         if self.tabela_pendentes.get_row_checks():
@@ -121,7 +120,11 @@ class AnalisesPendentes(Screen):
                     self.output_file.write(outputStream)
 
             os.chdir(self.diretorio)
-            os.remove(arquivo)
+            try:
+                os.remove(arquivo)
+            except PermissionError:
+                self.dialog_permissao_assinat = MDDialog(text='Erro! Arquivo em uso.', radius=[20, 7, 20, 7], )
+                self.dialog_permissao_assinat.open()
             self.salvos.append(n)
 
         troca = 0
@@ -227,6 +230,7 @@ class CarregarAnalise(Screen):
 class NovaAnalise(Screen):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
+        self.dialog_permissao = None
         self.lista_mat = [[], [], [], [], [], [], [], []]  # Lista para trabalhar com 8 posições de colunas de materiais
         self.entradas_mat = []  # Recebe os inputs criados para os dados de materiais
         self.lista_serv = [[], [], []]  # Lista para trabalhar com as 3 posições de colunas de serviços
@@ -243,13 +247,13 @@ class NovaAnalise(Screen):
         Clock.schedule_once(self.informacoes_padrao)
 
     def informacoes_padrao(self, dt):
-        self.ids.obs.text = 'Produto para Consumo Final. \nFabricante: Alíquota de ICMS de 18% conforme RICMS-SP/2000,' \
+        self.ids.obs.text = 'Produto para Consumo Final. \nFabricante: Alíquota de ICMS de 18% conforme RICMS-SP/2000,'\
                             ' Livro I, Título III, Capítulo II, Seção II, Artigo 52, Inciso I \nRevendedor: ' \
                             'Informar o ICMS-ST  recolhido anteriormente\n\nEntrega de materiais em local diverso do ' \
                             'destinatário: o endereço deverá constar na nota fiscal em campo específico do xml ' \
                             '(bloco G) e em dados adicionais. (Regime Especial 28558/2018).'
 
-        self.ids.obs1.text = 'Obs 1: Caso o fornecedor possua alguma especificidade que implique tratamento tributário' \
+        self.ids.obs1.text = 'Obs 1: Caso o fornecedor possua alguma especificidade que implique tratamento tributário'\
                              ' diverso do exposto acima, ou seja do regime tributário "SIMPLES NACIONAL" deverá' \
                              '  apresentar documentação hábil que comprove sua condição peculiar, a qual será alvo de' \
                              ' análise prévia pela GECOT.'
@@ -829,8 +833,12 @@ class NovaAnalise(Screen):
         # self.pdf.image('usuario2.png', x=7.0, y=265.0, h=25.0, w=45.0)
         troca = self.ids.proc.text.replace('/', '-')
         nome_arquivo = 'Análise Tributária - ' + troca + '.pdf'
-        self.pdf.output(os.path.join(self.manager.get_screen("pendentes").diretorio, nome_arquivo), 'F')
-        os.startfile(os.path.join(self.manager.get_screen("pendentes").diretorio, nome_arquivo))
+        try:
+            self.pdf.output(os.path.join(self.manager.get_screen("pendentes").diretorio, nome_arquivo), 'F')
+            os.startfile(os.path.join(self.manager.get_screen("pendentes").diretorio, nome_arquivo))
+        except PermissionError:
+            self.dialog_permissao = MDDialog(text='Erro! Análise em uso.', radius=[20, 7, 20, 7], )
+            self.dialog_permissao.open()
 
     def enviar_email(self):
         outlook = win32.Dispatch('outlook.application')
