@@ -407,7 +407,10 @@ class NovaAnalise(Screen):
         serv_cad = pd.DataFrame(serv_cad)
         serv_cad['Nº de serviço'] = serv_cad['Nº de serviço'].astype(str)
         win32clipboard.OpenClipboard()
-        rows = win32clipboard.GetClipboardData()
+        try:
+            rows = win32clipboard.GetClipboardData()
+        except TypeError:
+            rows = ''
         win32clipboard.EmptyClipboard()
         win32clipboard.CloseClipboard()
         rows = rows.split('\n')
