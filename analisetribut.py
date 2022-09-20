@@ -421,8 +421,8 @@ class NovaAnalise(Screen):
                 del values[1:]
             for b, value in enumerate(values):
                 for index, row in serv_cad.iterrows():
-                    self.lista_serv[b][r + self.posicao].text = value
-                    if value == row['Nº de serviço']:
+                    self.lista_serv[b][r + self.posicao].text = value.strip()
+                    if value.strip() == row['Nº de serviço']:
                         self.lista_serv[b + 1][r + self.posicao].text = serv_cad.loc[index, 'Denominação']
                         self.lista_serv[b + 2][r + self.posicao].text = str(int(serv_cad.loc[index, 'Classe avaliaç.']))
 
@@ -598,8 +598,10 @@ class NovaAnalise(Screen):
         self.pdf.set_font('')
         self.pdf.cell(w=40, h=5, txt=self.ids.valor.text)
         self.pdf.set_font('arial', 'B', 10)
-        self.pdf.set_xy(15.0, self.pdf.get_y() + 5)
-        self.pdf.cell(w=40, h=5, txt=self.ids.complem.text)
+        self.pdf.set_xy(10.0, self.pdf.get_y() + 10)
+        self.pdf.cell(w=40, h=5, txt='Observações: ')
+        self.pdf.set_x(40.0)
+        self.pdf.multi_cell(w=160, h=5, txt=self.ids.complem.text)
         self.pdf.set_xy(15.0, self.pdf.get_y() + 10)
         self.pdf.set_auto_page_break(True, 20.0)
 
@@ -797,11 +799,13 @@ class NovaAnalise(Screen):
         self.pdf.rect(5.0, 5.0, 200.0, 280.0)
 
         # =============================  INFORMAÇÕES CONTRATUAIS ===========================================#
+        bd_cont = 0
         self.pdf.set_y(self.pdf.get_y() + (float(self.ids.linha_cont.text) * 10))
         rel_check = []
         [rel_check.append(i.active) for i in self.lista_check]
         if True in rel_check:
-            self.pdf.set_xy(10.0, self.pdf.get_y() + 5)
+            self.pdf.set_xy(10.0, self.pdf.get_y() + 7.5)
+            bd_cont = self.pdf.get_y()
             self.pdf.cell(w=40, h=5, txt='Informações Contratuais : ')
         self.pdf.rect(5.0, 5.0, 200.0, 280.0)
         self.pdf.set_xy(10.0, self.pdf.get_y() + 5)
@@ -818,6 +822,9 @@ class NovaAnalise(Screen):
                 if self.pdf.get_y() > 270:
                     self.pdf.add_page()
                     self.pdf.rect(5.0, 5.0, 200.0, 280.0)
+
+        if True in rel_check:
+            self.pdf.rect(7.5, bd_cont - 3, 195.0, self.pdf.get_y() - bd_cont + 7.5)
 
         if int(self.ids.linha_cont.text) > 0:
             self.pdf.rect(5.0, 5.0, 200.0, 280.0)
