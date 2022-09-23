@@ -598,8 +598,9 @@ class NovaAnalise(Screen):
         self.pdf.set_font('')
         self.pdf.cell(w=40, h=5, txt=self.ids.valor.text)
         self.pdf.set_font('arial', 'B', 10)
-        self.pdf.set_xy(10.0, self.pdf.get_y() + 10)
-        self.pdf.cell(w=40, h=5, txt='Observações: ')
+        if self.ids.complem.text != "":
+            self.pdf.set_xy(10.0, self.pdf.get_y() + 10)
+            self.pdf.cell(w=40, h=5, txt='Observações: ')
         self.pdf.set_x(40.0)
         self.pdf.multi_cell(w=160, h=5, txt=self.ids.complem.text)
         self.pdf.set_xy(15.0, self.pdf.get_y() + 10)
@@ -614,9 +615,10 @@ class NovaAnalise(Screen):
                 cont += 1
 
         if self.entradas_mat[0].text != '':
-            self.pdf.set_y(self.pdf.get_y() + (float(self.ids.linha_mat.text) * 5))
-            if int(self.ids.linha_mat.text) > 0:
-                self.pdf.rect(5.0, 5.0, 200.0, 280.0)
+            if self.ids.linha_mat.text != "":
+                self.pdf.set_y(self.pdf.get_y() + (float(self.ids.linha_mat.text) * 5))
+                if int(self.ids.linha_mat.text) > 0:
+                    self.pdf.rect(5.0, 5.0, 200.0, 280.0)
 
             q1 = self.pdf.get_y()
             self.pdf.set_font('')
@@ -688,9 +690,10 @@ class NovaAnalise(Screen):
             self.pdf.rect(5.0, 5.0, 200.0, 280.0)
         # ======================================== SERVIÇOS =============================================#
         if self.ids.iva.text != '':
-            self.pdf.set_y(self.pdf.get_y() + (float(self.ids.linha_serv.text) * 5))
-            if int(self.ids.linha_serv.text) > 0:
-                self.pdf.rect(5.0, 5.0, 200.0, 280.0)
+            if self.ids.linha_serv.text != "":
+                self.pdf.set_y(self.pdf.get_y() + (float(self.ids.linha_serv.text) * 5))
+                if int(self.ids.linha_serv.text) > 0:
+                    self.pdf.rect(5.0, 5.0, 200.0, 280.0)
 
             self.pdf.set_xy(10.0, self.pdf.get_y())
             q2 = self.pdf.get_y()
@@ -788,9 +791,10 @@ class NovaAnalise(Screen):
             self.pdf.rect(5.0, 5.0, 200.0, 280.0)
 
         # ============================== OBSERVAÇÕES ===========================================#
-        self.pdf.set_y(self.pdf.get_y() + (float(self.ids.linha_obs.text) * 5))
-        if int(self.ids.linha_obs.text) > 0:
-            self.pdf.rect(5.0, 5.0, 200.0, 280.0)
+        if self.ids.linha_obs.text != "":
+            self.pdf.set_y(self.pdf.get_y() + (float(self.ids.linha_obs.text) * 5))
+            if int(self.ids.linha_obs.text) > 0:
+                self.pdf.rect(5.0, 5.0, 200.0, 280.0)
         self.pdf.rect(5.0, 5.0, 200.0, 280.0)
         self.pdf.set_font('')
         self.pdf.multi_cell(w=180, h=5, txt=self.ids.obs1.text)
@@ -800,13 +804,16 @@ class NovaAnalise(Screen):
 
         # =============================  INFORMAÇÕES CONTRATUAIS ===========================================#
         bd_cont = 0
-        self.pdf.set_y(self.pdf.get_y() + (float(self.ids.linha_cont.text) * 10))
+        if self.ids.linha_cont.text != "":
+            self.pdf.set_y(self.pdf.get_y() + (float(self.ids.linha_cont.text) * 10))
         rel_check = []
         [rel_check.append(i.active) for i in self.lista_check]
+
         if True in rel_check:
             self.pdf.set_xy(10.0, self.pdf.get_y() + 7.5)
-            bd_cont = self.pdf.get_y()
+
             self.pdf.cell(w=40, h=5, txt='Informações Contratuais : ')
+            bd_cont = self.pdf.get_y()
         self.pdf.rect(5.0, 5.0, 200.0, 280.0)
         self.pdf.set_xy(10.0, self.pdf.get_y() + 5)
         for i, item in enumerate(self.lista_check):
@@ -825,9 +832,11 @@ class NovaAnalise(Screen):
 
         if True in rel_check:
             self.pdf.rect(7.5, bd_cont - 3, 195.0, self.pdf.get_y() - bd_cont + 7.5)
-
-        if int(self.ids.linha_cont.text) > 0:
-            self.pdf.rect(5.0, 5.0, 200.0, 280.0)
+            print(bd_cont)
+            print(self.pdf.get_y())
+        if self.ids.linha_cont.text != "":
+            if int(self.ids.linha_cont.text) > 0:
+                self.pdf.rect(5.0, 5.0, 200.0, 280.0)
 
         # =============================== ASSINATURA E DATA =====================================#
         self.pdf.rect(5.0, 265.0, 200.0, 20.0)
