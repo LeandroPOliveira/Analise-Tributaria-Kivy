@@ -10,7 +10,7 @@ visualizado e também assinado, retornando o email ao usuario solicitante.
 Atualmente as informações sobre o cadastro de materiais e serviços estão armazenadas em planilha excel, na qual o programa faz a busca de acordo com os códigos digitados.
 
 Tela Inicial:<br>
-<img src="https://github.com/LeandroPOliveira/Analise-Tributaria-Kivy/blob/main/tela_inicio.png" width="800" height="400">
+<img src="https://github.com/LeandroPOliveira/Analise-Tributaria-Kivy/blob/main/tela_inicio.png" width="800" height="400">#vitrinedev
 
 Tela criação:<br>
 <img src="https://github.com/LeandroPOliveira/Analise-Tributaria-Kivy/blob/main/tela_criar.gif" width="800" height="400">
