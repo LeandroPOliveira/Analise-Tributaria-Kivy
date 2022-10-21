@@ -7,10 +7,10 @@ O Script tem objetivo de facilitar o preenchimento do relatório e dar agilidade
 um email será enviado ao gestor informando que existem análises pendentes para serem validadas, ao consultar pelo programa, o arquivo poderá ser 
 visualizado e também assinado, retornando o email ao usuario solicitante.
 
-Tela Inicial:
-![alt text](https://github.com/LeandroPOliveira/Analise-Tributaria-Kivy/blob/main/tela_inicio.png?raw=true)
+Atualmente as informações sobre o cadastro de materiais e serviços estão armazenadas em planilha excel, na qual o programa faz a busca de acordo com os códigos digitados.
 
-Tela Nova Análise:
-![alt text](https://github.com/LeandroPOliveira/Analise-Tributaria-Kivy/blob/main/tela_criar1.png?raw=true)
-![alt text](https://github.com/LeandroPOliveira/Analise-Tributaria-Kivy/blob/main/tela_criar2.png?raw=true)
-![alt text](https://github.com/LeandroPOliveira/Analise-Tributaria-Kivy/blob/main/tela_criar3.png?raw=true)
+Tela Inicial:<br>
+<img src="https://github.com/LeandroPOliveira/Analise-Tributaria-Kivy/blob/main/tela_inicio.png" width="800" height="400">
+
+Tela criação:<br>
+<img src="https://github.com/LeandroPOliveira/Analise-Tributaria-Kivy/blob/main/tela_criar.gif" width="800" height="400">
