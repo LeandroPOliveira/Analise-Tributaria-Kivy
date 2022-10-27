@@ -9,6 +9,8 @@ visualizado e também assinado, retornando o email ao usuario solicitante.
 
 Atualmente as informações sobre o cadastro de materiais e serviços estão armazenadas em planilha excel, na qual o programa faz a busca de acordo com os códigos digitados.
 
+Para utilizar o script comentar as linhas 42, 50, 51, 245, 858 e descomentar as linhas 43, 52, 246 e 859
+
 Tela Inicial:<br>
 <img src="https://github.com/LeandroPOliveira/Analise-Tributaria-Kivy/blob/main/tela_inicio.png" width="800" height="400">#vitrinedev
 
