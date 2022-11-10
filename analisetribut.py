@@ -40,6 +40,7 @@ class AnalisesPendentes(Screen):
         c = canvas.Canvas('watermark.pdf')
         # Desenhar a imagem na posição x e y.
         c.drawImage(getpass.getuser() + '.png', 440, 30, 100, 60, mask='auto')
+        # c.drawImage('assinatura.png', 440, 30, 100, 60, mask='auto')
         c.save()
         # Buscar o arquivo da marca d'agua criado
         self.watermark = PdfFileReader(open(os.path.join('watermark.pdf'), 'rb'))
@@ -48,6 +49,7 @@ class AnalisesPendentes(Screen):
         with open('dados.txt', 'r', encoding='UTF-8') as bd:
             self.dados = bd.readlines()
             self.diretorio = self.dados[0].rstrip('\n')
+        # self.diretorio = os.getcwd()
 
     def add_datatable(self):  # Adicionar tabela com as análises pendentes
         self.arquivos_assinatura.clear()
@@ -240,6 +242,8 @@ class NovaAnalise(Screen):
         self.infos = []  # Carregar informações das cláusulas de contrato
         self.data_mat = []  # Lista para incluir dados dos materiais no pdf
         self.data = []  # Lista para incluir dados de serviços no pdf
+        self.dados_cadastro = 'cadastro.xlsx'
+        # self.dados_cadastro = 'cadastro - exemplo.xlsx'
 
         Clock.schedule_once(self.cria_tabela_materiais)
         Clock.schedule_once(self.cria_tabela_servicos)
@@ -284,7 +288,7 @@ class NovaAnalise(Screen):
                 self.entradas_mat[i + 1].bind(focus=self.busca_dados_mat)
 
     def busca_dados_mat(self, instance, widget):
-        cad_mat = pd.read_excel(os.path.join(self.manager.get_screen("pendentes").diretorio, 'cadastro.xlsx'),
+        cad_mat = pd.read_excel(os.path.join(self.manager.get_screen("pendentes").diretorio, self.dados_cadastro),
                                 sheet_name='materiais', converters={'Material': str, 'IPI': str})
         cad_mat = pd.DataFrame(cad_mat)
 
@@ -307,7 +311,7 @@ class NovaAnalise(Screen):
                     self.posicao = int(i / 6) if i > 0 else i
                     break
 
-        cad_mat = pd.read_excel(os.path.join(self.manager.get_screen("pendentes").diretorio, 'cadastro.xlsx'),
+        cad_mat = pd.read_excel(os.path.join(self.manager.get_screen("pendentes").diretorio, self.dados_cadastro),
                                 sheet_name='materiais', converters={'Material': str, 'IPI': str})
         cad_mat['Material'] = cad_mat['Material'].astype(str)
         win32clipboard.OpenClipboard()
@@ -383,7 +387,7 @@ class NovaAnalise(Screen):
                 self.entradas[i + 1].bind(focus=self.busca_dados_serv)
 
     def busca_dados_serv(self, instance, widget):
-        serv_cad = pd.read_excel(os.path.join(self.manager.get_screen("pendentes").diretorio, 'cadastro.xlsx'),
+        serv_cad = pd.read_excel(os.path.join(self.manager.get_screen("pendentes").diretorio, self.dados_cadastro),
                                  sheet_name='servicos')
         serv_cad = pd.DataFrame(serv_cad)
         serv_cad['Nº de serviço'] = serv_cad['Nº de serviço'].astype(str)
@@ -402,7 +406,7 @@ class NovaAnalise(Screen):
                 self.posicao = int(i / 3) if i > 0 else i
                 print(self.posicao)
                 break
-        serv_cad = pd.read_excel(os.path.join(self.manager.get_screen("pendentes").diretorio, 'cadastro.xlsx'),
+        serv_cad = pd.read_excel(os.path.join(self.manager.get_screen("pendentes").diretorio, self.dados_cadastro),
                                  sheet_name='servicos')
         serv_cad = pd.DataFrame(serv_cad)
         serv_cad['Nº de serviço'] = serv_cad['Nº de serviço'].astype(str)
@@ -428,7 +432,7 @@ class NovaAnalise(Screen):
 
     def busca_dados_lei_116(self):
         if self.ids.cod_serv.text != '':
-            data_serv = pd.read_excel(os.path.join(self.manager.get_screen("pendentes").diretorio, 'cadastro.xlsx'),
+            data_serv = pd.read_excel(os.path.join(self.manager.get_screen("pendentes").diretorio, self.dados_cadastro),
                                       sheet_name='116', dtype=str)
             data_serv = pd.DataFrame(data_serv)
             descricao = []
@@ -697,11 +701,11 @@ class NovaAnalise(Screen):
 
             self.pdf.set_xy(10.0, self.pdf.get_y())
             q2 = self.pdf.get_y()
-            self.pdf.multi_cell(w=180, h=5,
-                                txt=' - Serviços serão acobertados por Nota Fiscal de serviço eletrônica. ')
+            # self.pdf.multi_cell(w=180, h=5,
+            #                     txt=' - Serviços serão acobertados por Nota Fiscal de serviço eletrônica. ')
             self.pdf.set_xy(10.0, self.pdf.get_y() + 5)
-            self.pdf.multi_cell(w=180, h=5, txt='O código de imposto (IVA) utilizado no pedido (SAP) '
-                                                'deverá ser o ' + self.ids.iva.text + '.')
+            # self.pdf.multi_cell(w=180, h=5, txt='O código de imposto (IVA) utilizado no pedido (SAP) '
+            #                                     'deverá ser o ' + self.ids.iva.text + '.')
 
             self.data = [['DESCRIÇÃO', 'CÓDIGO', 'C.C']]
             self.data[1:].clear()
@@ -818,14 +822,17 @@ class NovaAnalise(Screen):
         self.pdf.set_xy(10.0, self.pdf.get_y() + 5)
         for i, item in enumerate(self.lista_check):
             if item.active is True:
-                if self.pdf.get_y() + math.ceil(len(self.infos[i].text) / 105) * 5 > 270:
+                if self.pdf.get_y() + math.ceil(len(self.infos[i].text.encode('latin-1', 'ignore').decode("latin-1")) /
+                                                105) * 5 > 270:
                     self.pdf.add_page()
                     self.pdf.rect(5.0, 5.0, 200.0, 280.0)
                     self.pdf.set_xy(15.0, self.pdf.get_y() + 5)
-                    self.pdf.multi_cell(w=180, h=5, align='L', txt=self.infos[i].text)
+                    self.pdf.multi_cell(w=180, h=5, align='L', txt=self.infos[i].text.encode('latin-1', 'ignore').
+                                        decode("latin-1"))
                 else:
                     self.pdf.set_xy(15.0, self.pdf.get_y() + 5)
-                    self.pdf.multi_cell(w=180, h=5, align='L', txt=self.infos[i].text)
+                    self.pdf.multi_cell(w=180, h=5, align='L', txt=self.infos[i].text.encode('latin-1', 'ignore').
+                                        decode("latin-1"))
                 if self.pdf.get_y() > 270:
                     self.pdf.add_page()
                     self.pdf.rect(5.0, 5.0, 200.0, 280.0)
@@ -849,7 +856,7 @@ class NovaAnalise(Screen):
         self.pdf.set_xy(135.0, 270.0)
         self.pdf.cell(w=40, txt='Revisado pela Gerência: ')
         self.pdf.image(getpass.getuser() + '.png', x=7.0, y=265.0, h=25.0, w=45.0)
-        # self.pdf.image('usuario2.png', x=7.0, y=265.0, h=25.0, w=45.0)
+        # self.pdf.image('assinatura.png', x=7.0, y=265.0, h=25.0, w=45.0)
         troca = self.ids.proc.text.replace('/', '-')
         nome_arquivo = 'Análise Tributária - ' + troca + '.pdf'
         try:

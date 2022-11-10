@@ -1,0 +1,4 @@
+C:\Users # caminho simbólico, não usado no exemplo
+emaildequemfez@email.com.br
+emaildequemassina@email.com.br
+
