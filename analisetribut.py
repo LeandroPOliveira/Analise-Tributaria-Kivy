@@ -1,6 +1,7 @@
+from datetime import datetime, date
+from fpdf import FPDF
 import getpass
-import math
-import pickle
+import glob
 from kivy.clock import Clock
 from kivy.uix.textinput import TextInput
 from kivymd.app import MDApp
@@ -8,18 +9,18 @@ from kivymd.uix.datatables import MDDataTable
 from kivy.lang.builder import Builder
 from kivy.uix.screenmanager import ScreenManager, Screen
 from kivy.metrics import dp
-import os
-from datetime import datetime, date
-from kivy.utils import get_color_from_hex
-import pandas as pd
-import win32clipboard
-from fpdf import FPDF
 from kivymd.uix.dialog import MDDialog
 from kivymd.uix.selectioncontrol import MDCheckbox
 from kivymd.uix.textfield import MDTextFieldRect
-import glob
-from reportlab.pdfgen import canvas
+from kivy.utils import get_color_from_hex
+from kivy.core.window import Window
+import math
+import os
+import pandas as pd
+import pickle
 from PyPDF2 import PdfFileWriter, PdfFileReader
+from reportlab.pdfgen import canvas
+import win32clipboard
 import win32com.client as win32
 
 
@@ -39,8 +40,7 @@ class AnalisesPendentes(Screen):
         # Criar a marca d'agua com a assinatura
         c = canvas.Canvas('watermark.pdf')
         # Desenhar a imagem na posição x e y.
-        c.drawImage(getpass.getuser() + '.png', 440, 30, 100, 60, mask='auto')
-        # c.drawImage('assinatura.png', 440, 30, 100, 60, mask='auto')
+        c.drawImage('assinatura.png', 440, 30, 100, 60, mask='auto')
         c.save()
         # Buscar o arquivo da marca d'agua criado
         self.watermark = PdfFileReader(open(os.path.join('watermark.pdf'), 'rb'))
@@ -49,7 +49,7 @@ class AnalisesPendentes(Screen):
         with open('dados.txt', 'r', encoding='UTF-8') as bd:
             self.dados = bd.readlines()
             self.diretorio = self.dados[0].rstrip('\n')
-        # self.diretorio = os.getcwd()
+        self.diretorio = os.getcwd()
 
     def add_datatable(self):  # Adicionar tabela com as análises pendentes
         self.arquivos_assinatura.clear()
@@ -242,8 +242,7 @@ class NovaAnalise(Screen):
         self.infos = []  # Carregar informações das cláusulas de contrato
         self.data_mat = []  # Lista para incluir dados dos materiais no pdf
         self.data = []  # Lista para incluir dados de serviços no pdf
-        self.dados_cadastro = 'cadastro.xlsx'
-        # self.dados_cadastro = 'cadastro - exemplo.xlsx'
+        self.dados_cadastro = 'cadastro - exemplo.xlsx'
 
         Clock.schedule_once(self.cria_tabela_materiais)
         Clock.schedule_once(self.cria_tabela_servicos)
@@ -701,11 +700,11 @@ class NovaAnalise(Screen):
 
             self.pdf.set_xy(10.0, self.pdf.get_y())
             q2 = self.pdf.get_y()
-            # self.pdf.multi_cell(w=180, h=5,
-            #                     txt=' - Serviços serão acobertados por Nota Fiscal de serviço eletrônica. ')
+            self.pdf.multi_cell(w=180, h=5,
+                                txt=' - Serviços serão acobertados por Nota Fiscal de serviço eletrônica. ')
             self.pdf.set_xy(10.0, self.pdf.get_y() + 5)
-            # self.pdf.multi_cell(w=180, h=5, txt='O código de imposto (IVA) utilizado no pedido (SAP) '
-            #                                     'deverá ser o ' + self.ids.iva.text + '.')
+            self.pdf.multi_cell(w=180, h=5, txt='O código de imposto (IVA) utilizado no pedido (SAP) '
+                                                'deverá ser o ' + self.ids.iva.text + '.')
 
             self.data = [['DESCRIÇÃO', 'CÓDIGO', 'C.C']]
             self.data[1:].clear()
@@ -855,8 +854,7 @@ class NovaAnalise(Screen):
         self.pdf.line(130.0, 265.0, 130.0, 285.0)
         self.pdf.set_xy(135.0, 270.0)
         self.pdf.cell(w=40, txt='Revisado pela Gerência: ')
-        self.pdf.image(getpass.getuser() + '.png', x=7.0, y=265.0, h=25.0, w=45.0)
-        # self.pdf.image('assinatura.png', x=7.0, y=265.0, h=25.0, w=45.0)
+        self.pdf.image('assinatura.png', x=7.0, y=265.0, h=25.0, w=45.0)
         troca = self.ids.proc.text.replace('/', '-')
         nome_arquivo = 'Análise Tributária - ' + troca + '.pdf'
         try:
@@ -887,6 +885,8 @@ class WindowManager(ScreenManager):
 
 
 class Example(MDApp):
+    Window.maximize()
+    tamanho_tela = Window.size
 
     def build(self):
         return Builder.load_file('analisetribut.kv')

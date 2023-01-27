@@ -9,7 +9,6 @@ visualizado e também assinado, retornando o email ao usuario solicitante.
 
 Atualmente as informações sobre o cadastro de materiais e serviços estão armazenadas em planilha excel, na qual o programa faz a busca de acordo com os códigos digitados.
 
-Para utilizar o script comentar as linhas 42, 50, 51, 245, 858 e descomentar as linhas 43, 52, 246 e 859
 
 ---
 
@@ -20,7 +19,6 @@ This script has the goal to facilitate the report filling and give agility to th
 
 Today the database with the registries of materials and services codes are stored in an excel file, on which the program make the search accordingly to the typed or pasted codes.
 
-To use this script, you must comment the lines 42, 50, 51, 245, 858 and uncomment the lines 43, 52, 246 e 859. 
 
 Tela Initial / Initial Screen:<br>
 <img src="https://github.com/LeandroPOliveira/Analise-Tributaria-Kivy/blob/main/tela_inicio.png" width="800" height="400">#vitrinedev
