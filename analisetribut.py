@@ -403,7 +403,6 @@ class NovaAnalise(Screen):
         for i, l in enumerate(self.entradas):
             if l.text == '':
                 self.posicao = int(i / 3) if i > 0 else i
-                print(self.posicao)
                 break
         serv_cad = pd.read_excel(os.path.join(self.manager.get_screen("pendentes").diretorio, self.dados_cadastro),
                                  sheet_name='servicos')
@@ -836,10 +835,6 @@ class NovaAnalise(Screen):
                     self.pdf.add_page()
                     self.pdf.rect(5.0, 5.0, 200.0, 280.0)
 
-        if True in rel_check:
-            self.pdf.rect(7.5, bd_cont - 3, 195.0, self.pdf.get_y() - bd_cont + 7.5)
-            print(bd_cont)
-            print(self.pdf.get_y())
         if self.ids.linha_cont.text != "":
             if int(self.ids.linha_cont.text) > 0:
                 self.pdf.rect(5.0, 5.0, 200.0, 280.0)
