@@ -5,6 +5,7 @@ import glob
 from kivy.clock import Clock
 from kivy.uix.textinput import TextInput
 from kivymd.app import MDApp
+from kivymd.uix.button import MDIconButton
 from kivymd.uix.datatables import MDDataTable
 from kivy.lang.builder import Builder
 from kivy.uix.screenmanager import ScreenManager, Screen
@@ -232,6 +233,7 @@ class CarregarAnalise(Screen):
 class NovaAnalise(Screen):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
+        self.btn_apaga_serv = None
         self.dialog_permissao = None
         self.lista_mat = [[], [], [], [], [], [], [], []]  # Lista para trabalhar com 8 posições de colunas de materiais
         self.entradas_mat = []  # Recebe os inputs criados para os dados de materiais
@@ -278,13 +280,21 @@ class NovaAnalise(Screen):
                 self.mater = MDTextFieldRect(multiline=False, size_hint=(largura, .05), write_tab=False)
                 self.entradas_mat.append(self.mater)
                 self.lista_mat[c].append(self.mater)
-
-                self.manager.get_screen("nova").ids.grid_teste.add_widget(self.mater)
+                self.manager.get_screen("nova").ids.grid_mat.add_widget(self.mater)
+            self.btn_apaga = MDIconButton(icon="close", icon_size="15sp", theme_text_color="Custom",
+                                          icon_color='red',
+                                          text=f'{i}', on_press=self.apagar_linha)
+            self.manager.get_screen("nova").ids.grid_mat.add_widget(self.btn_apaga)
 
         for i, n in enumerate(self.entradas_mat):
             if i % 6 == 0:
                 self.entradas_mat[i].bind(on_text_validate=self.busca_dados_mat_clipboard)
                 self.entradas_mat[i + 1].bind(focus=self.busca_dados_mat)
+
+    def apagar_linha(self, instance):
+        for i in self.entradas_mat[int(instance.text) * 6:(int(instance.text) + 1) * 6]:
+            self.ids.grid_mat.remove_widget(i)
+            self.ids.grid_mat.remove_widget(instance)
 
     def busca_dados_mat(self, instance, widget):
         cad_mat = pd.read_excel(os.path.join(self.manager.get_screen("pendentes").diretorio, self.dados_cadastro),
@@ -379,12 +389,21 @@ class NovaAnalise(Screen):
                 self.entradas.append(self.serv)
                 self.lista_serv[c].append(self.serv)
                 self.ids.grid_serv.add_widget(self.serv)
+            self.btn_apaga_serv = MDIconButton(icon="close", icon_size="15sp", theme_text_color="Custom",
+                                               icon_color='red',
+                                               text=f'{i}', on_press=self.apagar_linha_serv)
+            self.manager.get_screen("nova").ids.grid_serv.add_widget(self.btn_apaga_serv)
 
         for i, n in enumerate(self.entradas):
             if i % 3 == 0:
                 self.entradas[i].bind(on_text_validate=self.busca_dados_serv_clipboard)
                 self.entradas[i + 1].bind(focus=self.busca_dados_serv)
-
+    
+    def apagar_linha_serv(self, instance):
+        for i in self.entradas[int(instance.text)*3:(int(instance.text)+1)*3]:
+            self.ids.grid_serv.remove_widget(i)
+            self.ids.grid_serv.remove_widget(instance)
+    
     def busca_dados_serv(self, instance, widget):
         serv_cad = pd.read_excel(os.path.join(self.manager.get_screen("pendentes").diretorio, self.dados_cadastro),
                                  sheet_name='servicos')

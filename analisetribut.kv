@@ -401,15 +401,15 @@
 
                 MDLabel:
                     text: 'Código'
-                    pos_hint: {'x':0.29, 'y':0.72}
+                    pos_hint: {'x':0.26, 'y':0.72}
 
                 MDLabel:
                     text: 'Descrição'
-                    pos_hint: {'x':0.41, 'y':0.72}
+                    pos_hint: {'x':0.40, 'y':0.72}
 
                 MDLabel:
                     text: 'IVA'
-                    pos_hint: {'x':0.535, 'y':0.72}
+                    pos_hint: {'x':0.53, 'y':0.72}
 
                 MDLabel:
                     text: 'NCM'
@@ -433,14 +433,14 @@
                     scroll_type: ['bars', 'content']
 
                     GridLayout:
-                        id: grid_teste
+                        id: grid_mat
                         size_hint_y: None
                         height: self.minimum_height
                         row_default_height: 30
-                        cols: 6
+                        cols: 7
                         rows: 61
                         bar_width: 50
-                        padding: [300, 0, 300, 0]
+                        padding: [250, 0, 250, 0]
 
                 MDRectangleFlatButton:
                     text: 'Limpar Campos'
@@ -508,7 +508,8 @@
 
                 MDLabel:
                     text: 'C.C.'
-                    pos_hint: {'x':0.65, 'y':0.475}
+                    pos_hint: {'x':0.64, 'y':0.475}
+                    pos_hint: {'x':0.64, 'y':0.475}
 
 
                 ScrollView:
@@ -524,7 +525,7 @@
                         size_hint_y: None
                         height: self.minimum_height
                         row_default_height: 30
-                        cols: 3
+                        cols: 4
                         rows: 90
                         bar_width: 50
                         padding: [350, 0, 350, 0]
