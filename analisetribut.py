@@ -300,6 +300,8 @@ class NovaAnalise(Screen):
         cad_mat = pd.read_excel(os.path.join(self.manager.get_screen("pendentes").diretorio, self.dados_cadastro),
                                 sheet_name='materiais', converters={'Material': str, 'IPI': str})
         cad_mat = pd.DataFrame(cad_mat)
+        cad_mat['IPI'].fillna("0", inplace=True)
+        cad_mat['IPI'] = cad_mat['IPI'].replace({'NT': '0', '.': ','}) + '%'
 
         for i, l in enumerate(self.entradas_mat):
             if i % 6 == 0:
@@ -323,6 +325,8 @@ class NovaAnalise(Screen):
         cad_mat = pd.read_excel(os.path.join(self.manager.get_screen("pendentes").diretorio, self.dados_cadastro),
                                 sheet_name='materiais', converters={'Material': str, 'IPI': str})
         cad_mat['Material'] = cad_mat['Material'].astype(str)
+        cad_mat['IPI'].fillna("0", inplace=True)
+        cad_mat['IPI'] = cad_mat['IPI'].replace({'NT': '0', '.': ','}) + '%'
         win32clipboard.OpenClipboard()
         try:
             rows = win32clipboard.GetClipboardData()
