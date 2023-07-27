@@ -326,6 +326,7 @@ class NovaAnalise(Screen):
                                 sheet_name='materiais', converters={'Material': str, 'IPI': str})
         cad_mat['Material'] = cad_mat['Material'].astype(str)
         cad_mat['IPI'].fillna("0", inplace=True)
+        cad_mat['Ncm'].fillna("0", inplace=True)
         cad_mat['IPI'] = cad_mat['IPI'].replace({'NT': '0', '.': ','}) + '%'
         win32clipboard.OpenClipboard()
         try:
@@ -615,7 +616,7 @@ class NovaAnalise(Screen):
         self.pdf.cell(w=40, h=5, txt='Objeto: ')
         self.pdf.set_xy(30.0, 77.0)
         self.pdf.set_font('')
-        self.pdf.multi_cell(w=160, h=5, txt=self.ids.objeto.text)
+        self.pdf.multi_cell(w=160, h=5, txt=self.ids.objeto.text.encode('latin-1', 'ignore').decode("latin-1"))
         self.pdf.set_font('arial', 'B', 10)
         self.pdf.set_xy(10.0, self.pdf.get_y() + 5)
         self.pdf.cell(w=40, h=5, txt='Valor estimado: ')
